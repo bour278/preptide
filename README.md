@@ -4,7 +4,11 @@ A comprehensive collection of interview preparation materials for quantitative t
 
 ## Overview
 
-![Demo](./assets/demo-video.mp4)
+
+
+https://github.com/user-attachments/assets/c332c994-13bc-4544-b8b0-d4a8febca36f
+
+
 
 ## Contents
 
