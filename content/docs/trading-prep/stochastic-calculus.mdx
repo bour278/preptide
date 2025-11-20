@@ -1,0 +1,780 @@
+---
+title: Stochastic Calculus
+description: Interview prep for stochastic calculus, including Brownian motion, Ito's lemma, SDEs, and martingales
+---
+
+# Stochastic Calculus Fundamentals
+
+## Fundamental Concepts
+
+### Stochastic Processes
+
+A **stochastic process** is a collection of random variables $\{X_t\}$ indexed by time $t$.
+
+**Discrete-time**: $X_0, X_1, X_2, ...$
+
+**Continuous-time**: $X_t$ for $t \in [0, \infty)$
+
+**Interpretation**: A stochastic process describes the evolution of a random quantity over time.
+
+### Filtration
+
+A **filtration** $\{\mathcal{F}_t\}$ is an increasing family of σ-algebras representing information available at time $t$.
+
+**Properties**:
+- $\mathcal{F}_s \subseteq \mathcal{F}_t$ for $s \leq t$
+- Represents "everything known up to time $t$"
+
+**Adapted process**: $X_t$ is $\mathcal{F}_t$-measurable (its value is known at time $t$)
+
+### Markov Property
+
+A process has the **Markov property** if:
+
+$$P(X_{t+s} \in A | \mathcal{F}_t) = P(X_{t+s} \in A | X_t)$$
+
+**Interpretation**: The future depends only on the present, not on the past.
+
+**Memoryless**: Given the present state, the past is irrelevant for predicting the future.
+
+## Random Walks
+
+### Simple Random Walk
+
+A **simple random walk** starts at $S_0 = 0$ and at each step:
+
+$$S_n = S_{n-1} + X_n$$
+
+where $X_n \in \{-1, +1\}$ with equal probability.
+
+**Properties**:
+- $E[S_n] = 0$
+- $\text{Var}(S_n) = n$
+- Symmetric, no drift
+
+### Random Walk with Drift
+
+If $X_n = +1$ with probability $p$ and $X_n = -1$ with probability $1-p$:
+
+**Drift**: $\mu = E[X_n] = 2p - 1$
+
+**Expected position**: $E[S_n] = n\mu$
+
+**Variance**: $\text{Var}(S_n) = n \cdot 4p(1-p)$
+
+### Scaled Random Walk
+
+Consider a random walk on time steps of length $\Delta t$ with step size $\Delta x$:
+
+$$S_{n\Delta t} = \sum_{i=1}^n \Delta x \cdot X_i$$
+
+**Scaling limit**: As $\Delta t \to 0$ and $\Delta x \to 0$ with $\frac{(\Delta x)^2}{\Delta t} \to \sigma^2$:
+
+$$S_t \to \text{Brownian motion with variance } \sigma^2 t$$
+
+## Brownian Motion
+
+### Definition
+
+**Standard Brownian motion** $W_t$ (also called Wiener process) satisfies:
+
+1. $W_0 = 0$ with probability 1
+2. **Independent increments**: $W_t - W_s$ is independent of $\{W_r : r \leq s\}$ for $t > s$
+3. **Stationary increments**: $W_t - W_s \sim \mathcal{N}(0, t-s)$ for $t > s$
+4. **Continuous paths**: $t \mapsto W_t$ is continuous
+
+**Key insight**: Brownian motion is the continuous-time limit of a scaled random walk.
+
+### Properties of Brownian Motion
+
+**Mean and variance**:
+- $E[W_t] = 0$
+- $\text{Var}(W_t) = t$
+- $W_t \sim \mathcal{N}(0, t)$
+
+**Covariance**: For $s < t$:
+
+$$\text{Cov}(W_s, W_t) = \min(s, t) = s$$
+
+**Martingale property**:
+
+$$E[W_t | \mathcal{F}_s] = W_s \quad \text{for } s < t$$
+
+### Symmetries and Transformations
+
+**Time scaling**: For $c > 0$:
+
+$$\{cW_{t/c^2}\} \text{ is also a Brownian motion}$$
+
+**Reflection**: $\{-W_t\}$ is also a Brownian motion
+
+**Time reversal**: $\{W_T - W_{T-t} : t \in [0,T]\}$ is a Brownian motion
+
+**Time inversion**: $\{tW_{1/t}\}$ for $t > 0$ (with $W_0 = 0$) is a Brownian motion
+
+### Quadratic Variation
+
+The **quadratic variation** of Brownian motion over $[0,t]$:
+
+$$[W]_t = \lim_{\|\Pi\| \to 0} \sum_{i=1}^n (W_{t_i} - W_{t_{i-1}})^2 = t$$
+
+where $\Pi = \{0 = t_0 < t_1 < ... < t_n = t\}$ is a partition.
+
+**Critical property**: Unlike smooth functions (which have zero quadratic variation), Brownian motion has non-zero quadratic variation.
+
+**Heuristic**: $(dW_t)^2 = dt$
+
+### Non-Differentiability
+
+Brownian motion paths are:
+- **Continuous everywhere**
+- **Differentiable nowhere** (with probability 1)
+
+**Consequence**: Standard calculus doesn't apply; we need stochastic calculus.
+
+### Brownian Motion with Drift and Diffusion
+
+**General Brownian motion**:
+
+$$X_t = \mu t + \sigma W_t$$
+
+where $\mu$ is the drift and $\sigma$ is the volatility.
+
+**Properties**:
+- $E[X_t] = \mu t$
+- $\text{Var}(X_t) = \sigma^2 t$
+- $X_t \sim \mathcal{N}(\mu t, \sigma^2 t)$
+
+## Stochastic Integration
+
+### Ito Integral
+
+The **Ito integral** of a stochastic process $f(t, \omega)$ with respect to Brownian motion:
+
+$$I_t = \int_0^t f(s) \, dW_s$$
+
+**Construction**: For simple processes:
+
+$$\int_0^t f(s) \, dW_s = \lim_{n \to \infty} \sum_{i=1}^n f(t_{i-1}) (W_{t_i} - W_{t_{i-1}})$$
+
+**Key**: Integrand is evaluated at the **left endpoint** of each interval (Ito convention).
+
+### Properties of Ito Integral
+
+**Martingale**: If $f$ is adapted and $E[\int_0^t f(s)^2 ds] < \infty$:
+
+$$E\left[\int_0^t f(s) \, dW_s\right] = 0$$
+
+$$E\left[\int_0^t f(s) \, dW_s \Big| \mathcal{F}_s\right] = \int_0^s f(r) \, dW_r$$
+
+**Ito isometry**:
+
+$$E\left[\left(\int_0^t f(s) \, dW_s\right)^2\right] = E\left[\int_0^t f(s)^2 \, ds\right]$$
+
+**Quadratic variation**:
+
+$$\left[\int_0^\cdot f(s) \, dW_s\right]_t = \int_0^t f(s)^2 \, ds$$
+
+### Stratonovich Integral
+
+An alternative definition using **midpoint** evaluation:
+
+$$\int_0^t f(s) \circ dW_s = \lim_{n \to \infty} \sum_{i=1}^n f\left(\frac{t_{i-1} + t_i}{2}\right) (W_{t_i} - W_{t_{i-1}})$$
+
+**Relationship to Ito integral**:
+
+$$\int_0^t f(s) \circ dW_s = \int_0^t f(s) \, dW_s + \frac{1}{2}\int_0^t f'(s)f(s) \, ds$$
+
+**Use**: Stratonovich calculus follows ordinary chain rule; Ito calculus requires Ito's lemma.
+
+## Ito's Lemma
+
+### One-Dimensional Ito's Lemma
+
+Let $X_t$ satisfy the SDE:
+
+$$dX_t = \mu(X_t, t) \, dt + \sigma(X_t, t) \, dW_t$$
+
+For $f(x, t)$ twice continuously differentiable in $x$ and once in $t$:
+
+$$df(X_t, t) = \left(\frac{\partial f}{\partial t} + \mu \frac{\partial f}{\partial x} + \frac{1}{2}\sigma^2 \frac{\partial^2 f}{\partial x^2}\right) dt + \sigma \frac{\partial f}{\partial x} \, dW_t$$
+
+**Comparison to chain rule**: The extra term $\frac{1}{2}\sigma^2 \frac{\partial^2 f}{\partial x^2}$ arises from quadratic variation.
+
+**Heuristic derivation**: Use $(dW_t)^2 = dt$ and Taylor expansion.
+
+### Ito's Formula (Integral Form)
+
+$$f(X_t, t) = f(X_0, 0) + \int_0^t \frac{\partial f}{\partial s}(X_s, s) \, ds + \int_0^t \frac{\partial f}{\partial x}(X_s, s) \, dX_s + \frac{1}{2}\int_0^t \sigma^2(X_s, s) \frac{\partial^2 f}{\partial x^2}(X_s, s) \, ds$$
+
+### Multidimensional Ito's Lemma
+
+For $\mathbf{X}_t \in \mathbb{R}^n$ satisfying:
+
+$$d\mathbf{X}_t = \boldsymbol{\mu}(\mathbf{X}_t, t) \, dt + \boldsymbol{\Sigma}(\mathbf{X}_t, t) \, d\mathbf{W}_t$$
+
+where $\mathbf{W}_t$ is an $m$-dimensional Brownian motion:
+
+$$df(\mathbf{X}_t, t) = \frac{\partial f}{\partial t} dt + \sum_{i=1}^n \frac{\partial f}{\partial x_i} dX_i^t + \frac{1}{2}\sum_{i=1}^n \sum_{j=1}^n \frac{\partial^2 f}{\partial x_i \partial x_j} dX_i^t dX_j^t$$
+
+where $dX_i^t dX_j^t = (\boldsymbol{\Sigma} \boldsymbol{\Sigma}^T)_{ij} dt$.
+
+## Stochastic Differential Equations (SDEs)
+
+### General Form
+
+An SDE describes the evolution of $X_t$:
+
+$$dX_t = \mu(X_t, t) \, dt + \sigma(X_t, t) \, dW_t$$
+
+- $\mu(X_t, t)$: **drift coefficient** (deterministic trend)
+- $\sigma(X_t, t)$: **diffusion coefficient** (volatility/randomness)
+
+**Integral form**:
+
+$$X_t = X_0 + \int_0^t \mu(X_s, s) \, ds + \int_0^t \sigma(X_s, s) \, dW_s$$
+
+### Existence and Uniqueness
+
+**Theorem**: If $\mu$ and $\sigma$ satisfy:
+
+1. **Lipschitz condition**: $|\mu(x,t) - \mu(y,t)| + |\sigma(x,t) - \sigma(y,t)| \leq K|x-y|$
+2. **Growth condition**: $|\mu(x,t)| + |\sigma(x,t)| \leq K(1 + |x|)$
+
+then the SDE has a **unique strong solution**.
+
+### Common SDEs
+
+**Ornstein-Uhlenbeck process** (mean-reverting):
+
+$$dX_t = \theta(\mu - X_t) \, dt + \sigma \, dW_t$$
+
+**Geometric Brownian motion**:
+
+$$dS_t = \mu S_t \, dt + \sigma S_t \, dW_t$$
+
+**Cox-Ingersoll-Ross (CIR) process**:
+
+$$dr_t = \kappa(\theta - r_t) \, dt + \sigma\sqrt{r_t} \, dW_t$$
+
+## Geometric Brownian Motion
+
+### Definition
+
+The SDE:
+
+$$dS_t = \mu S_t \, dt + \sigma S_t \, dW_t$$
+
+models exponential growth with random fluctuations.
+
+**Used for**: Stock prices, asset values (always positive).
+
+### Analytical Solution
+
+Apply Ito's lemma to $f(S_t, t) = \log S_t$:
+
+$$d(\log S_t) = \left(\mu - \frac{\sigma^2}{2}\right) dt + \sigma \, dW_t$$
+
+Integrating:
+
+$$\log S_t = \log S_0 + \left(\mu - \frac{\sigma^2}{2}\right)t + \sigma W_t$$
+
+Therefore:
+
+$$S_t = S_0 \exp\left(\left(\mu - \frac{\sigma^2}{2}\right)t + \sigma W_t\right)$$
+
+### Properties
+
+**Log-normal distribution**: $S_t$ is log-normally distributed:
+
+$$\log S_t \sim \mathcal{N}\left(\log S_0 + \left(\mu - \frac{\sigma^2}{2}\right)t, \sigma^2 t\right)$$
+
+**Expectation**:
+
+$$E[S_t] = S_0 e^{\mu t}$$
+
+**Variance**:
+
+$$\text{Var}(S_t) = S_0^2 e^{2\mu t}(e^{\sigma^2 t} - 1)$$
+
+**Positivity**: $S_t > 0$ for all $t$ (never reaches zero).
+
+## Ito Calculus Rules
+
+### Multiplication Table
+
+For stochastic differentials:
+
+| × | $dt$ | $dW_t$ |
+|---|------|--------|
+| $dt$ | 0 | 0 |
+| $dW_t$ | 0 | $dt$ |
+
+**Key rule**: $(dW_t)^2 = dt$ (from quadratic variation)
+
+**All higher order terms vanish**: $(dt)^2 = 0$, $dt \cdot dW_t = 0$
+
+### Integration by Parts (Ito Product Rule)
+
+For processes $X_t$ and $Y_t$:
+
+$$d(X_t Y_t) = X_t \, dY_t + Y_t \, dX_t + dX_t \, dY_t$$
+
+**The last term does not vanish** (unlike ordinary calculus).
+
+**Example**: If $dX_t = \mu_X dt + \sigma_X dW_t$ and $dY_t = \mu_Y dt + \sigma_Y dW_t$:
+
+$$dX_t \, dY_t = \sigma_X \sigma_Y \, dt$$
+
+### Ito's Formula for Products
+
+If $X_t$ and $Y_t$ are Ito processes:
+
+$$d(X_t Y_t) = X_t dY_t + Y_t dX_t + d\langle X, Y \rangle_t$$
+
+where $d\langle X, Y \rangle_t$ is the **quadratic covariation**.
+
+## Markov Chains
+
+### Discrete-Time Markov Chains
+
+A **discrete-time Markov chain** is a sequence $X_0, X_1, X_2, ...$ with state space $S$ satisfying:
+
+$$P(X_{n+1} = j | X_n = i, X_{n-1}, ..., X_0) = P(X_{n+1} = j | X_n = i)$$
+
+**Transition matrix**: $P = (p_{ij})$ where:
+
+$$p_{ij} = P(X_{n+1} = j | X_n = i)$$
+
+**Properties**:
+- $p_{ij} \geq 0$ for all $i, j$
+- $\sum_j p_{ij} = 1$ for all $i$
+
+### n-Step Transition Probabilities
+
+$$P(X_n = j | X_0 = i) = (P^n)_{ij}$$
+
+**Chapman-Kolmogorov equation**:
+
+$$p_{ij}^{(n+m)} = \sum_{k \in S} p_{ik}^{(n)} p_{kj}^{(m)}$$
+
+### Stationary Distribution
+
+A distribution $\boldsymbol{\pi} = (\pi_i)$ is **stationary** if:
+
+$$\boldsymbol{\pi}^T P = \boldsymbol{\pi}^T$$
+
+**Interpretation**: If the chain starts with distribution $\boldsymbol{\pi}$, it remains in distribution $\boldsymbol{\pi}$ forever.
+
+### Classification of States
+
+**Accessible**: State $j$ is accessible from state $i$ if $p_{ij}^{(n)} > 0$ for some $n \geq 0$
+
+**Communicating**: States $i$ and $j$ communicate if each is accessible from the other
+
+**Irreducible**: All states communicate with each other
+
+**Period**: $d(i) = \gcd\{n : p_{ii}^{(n)} > 0\}$
+- **Aperiodic**: $d(i) = 1$
+
+**Recurrent**: $P(\text{return to } i | X_0 = i) = 1$
+
+**Transient**: $P(\text{return to } i | X_0 = i) < 1$
+
+### Convergence to Stationarity
+
+**Theorem**: For an irreducible, aperiodic, finite Markov chain:
+
+$$\lim_{n \to \infty} p_{ij}^{(n)} = \pi_j$$
+
+independent of $i$, where $\boldsymbol{\pi}$ is the unique stationary distribution.
+
+### Continuous-Time Markov Chains
+
+State changes occur at random times. Defined by **rate matrix** $Q = (q_{ij})$:
+
+$$P(X_{t+h} = j | X_t = i) = q_{ij} h + o(h) \quad \text{for } i \neq j$$
+
+**Holding time** in state $i$: $\text{Exp}(-q_{ii})$
+
+**Forward equation** (Kolmogorov):
+
+$$P'(t) = P(t) Q$$
+
+where $P(t) = (p_{ij}(t))$ and $p_{ij}(t) = P(X_t = j | X_0 = i)$.
+
+## Markov Decision Processes (MDPs)
+
+### Definition
+
+An **MDP** is a tuple $(S, A, P, R, \gamma)$:
+- $S$: State space
+- $A$: Action space
+- $P$: Transition probabilities $P(s' | s, a)$
+- $R$: Reward function $R(s, a)$ or $R(s, a, s')$
+- $\gamma \in [0, 1]$: Discount factor
+
+**Interpretation**: An agent in state $s$ takes action $a$, receives reward $R(s,a)$, and transitions to state $s'$ with probability $P(s'|s,a)$.
+
+### Policy
+
+A **policy** $\pi$ maps states to actions:
+- **Deterministic**: $\pi: S \to A$
+- **Stochastic**: $\pi(a|s) = P(\text{action } a | \text{state } s)$
+
+**Goal**: Find policy $\pi^*$ that maximizes expected cumulative reward.
+
+### Value Functions
+
+**State value function** under policy $\pi$:
+
+$$V^\pi(s) = E_\pi\left[\sum_{t=0}^\infty \gamma^t R(s_t, a_t) \Big| s_0 = s\right]$$
+
+**Action value function** (Q-function):
+
+$$Q^\pi(s, a) = E_\pi\left[\sum_{t=0}^\infty \gamma^t R(s_t, a_t) \Big| s_0 = s, a_0 = a\right]$$
+
+**Relationship**:
+
+$$V^\pi(s) = \sum_a \pi(a|s) Q^\pi(s, a)$$
+
+$$Q^\pi(s, a) = R(s, a) + \gamma \sum_{s'} P(s'|s,a) V^\pi(s')$$
+
+### Bellman Equations
+
+**Bellman expectation equation**:
+
+$$V^\pi(s) = \sum_a \pi(a|s) \left[R(s,a) + \gamma \sum_{s'} P(s'|s,a) V^\pi(s')\right]$$
+
+**Bellman optimality equation**:
+
+$$V^*(s) = \max_a \left[R(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s')\right]$$
+
+$$Q^*(s,a) = R(s,a) + \gamma \sum_{s'} P(s'|s,a) \max_{a'} Q^*(s', a')$$
+
+**Optimal policy**: $\pi^*(s) = \arg\max_a Q^*(s,a)$
+
+### Solution Methods
+
+**Value Iteration**:
+
+$$V_{k+1}(s) = \max_a \left[R(s,a) + \gamma \sum_{s'} P(s'|s,a) V_k(s')\right]$$
+
+Converges to $V^*$ as $k \to \infty$.
+
+**Policy Iteration**:
+1. **Policy evaluation**: Solve $V^\pi$ from Bellman expectation equation
+2. **Policy improvement**: $\pi'(s) = \arg\max_a Q^\pi(s,a)$
+3. Repeat until convergence
+
+**Q-Learning** (model-free):
+
+$$Q(s,a) \leftarrow Q(s,a) + \alpha\left[r + \gamma \max_{a'} Q(s', a') - Q(s,a)\right]$$
+
+### Infinite Horizon vs. Finite Horizon
+
+**Infinite horizon**: $\sum_{t=0}^\infty \gamma^t R(s_t, a_t)$ with $\gamma < 1$
+
+**Finite horizon**: $\sum_{t=0}^T R(s_t, a_t)$ for fixed horizon $T$
+
+**Stationary policy**: Optimal policy independent of time (for infinite horizon with discount)
+
+**Non-stationary policy**: Optimal policy may depend on time (for finite horizon)
+
+### Partially Observable MDPs (POMDPs)
+
+**Extension**: Agent doesn't directly observe state $s$, but receives observation $o \sim O(o|s,a)$
+
+**Belief state**: Probability distribution over states $b(s) = P(s | \text{history})$
+
+**More complex**: Must maintain and update beliefs; problem becomes continuous-state MDP over belief space.
+
+## Martingales
+
+### Definition
+
+A process $M_t$ is a **martingale** with respect to filtration $\{\mathcal{F}_t\}$ if:
+
+$$E[M_t | \mathcal{F}_s] = M_s \quad \text{for all } s < t$$
+
+**Interpretation**: Best prediction of future value is current value (fair game).
+
+**Examples**:
+- Brownian motion $W_t$
+- $W_t^2 - t$
+- Ito integral $\int_0^t f(s) \, dW_s$
+
+### Submartingales and Supermartingales
+
+**Submartingale**: $E[M_t | \mathcal{F}_s] \geq M_s$ (tendency to increase)
+
+**Supermartingale**: $E[M_t | \mathcal{F}_s] \leq M_s$ (tendency to decrease)
+
+**Example**: Geometric Brownian motion $S_t$ with $\mu > 0$ is a submartingale.
+
+### Stopping Times
+
+A random variable $\tau$ is a **stopping time** if:
+
+$$\{\tau \leq t\} \in \mathcal{F}_t \quad \text{for all } t$$
+
+**Interpretation**: Decision to stop at time $\tau$ depends only on information up to $\tau$.
+
+**Examples**: First hitting time, first passage time.
+
+### Optional Stopping Theorem
+
+If $M_t$ is a martingale and $\tau$ is a stopping time with $E[\tau] < \infty$ and appropriate boundedness:
+
+$$E[M_\tau] = E[M_0]$$
+
+**Use**: Computing expected values at random times, gambler's ruin problems.
+
+## Important Tricks and Techniques
+
+### Trick 1: Recognizing Quadratic Variation
+
+Always remember $(dW_t)^2 = dt$ when applying Ito's lemma or product rule.
+
+### Trick 2: Solving SDEs via Ito's Lemma
+
+To solve $dX_t = \mu(X_t) dt + \sigma(X_t) dW_t$:
+1. Guess a transformation $f(X_t)$
+2. Apply Ito's lemma
+3. Choose $f$ to simplify the SDE
+
+**Example**: For $dS_t = \mu S_t dt + \sigma S_t dW_t$, use $f(S) = \log S$.
+
+### Trick 3: Change of Measure (Girsanov Theorem)
+
+Under a change of probability measure, Brownian motion with drift becomes standard Brownian motion:
+
+$$\tilde{W}_t = W_t + \int_0^t \theta_s \, ds$$
+
+is a Brownian motion under the new measure.
+
+### Trick 4: Feynman-Kac Formula
+
+Links PDEs to expectations of SDEs. If $u(x,t)$ solves:
+
+$$\frac{\partial u}{\partial t} + \mu \frac{\partial u}{\partial x} + \frac{1}{2}\sigma^2 \frac{\partial^2 u}{\partial x^2} = 0$$
+
+with $u(x,T) = g(x)$, then:
+
+$$u(x,t) = E[g(X_T) | X_t = x]$$
+
+where $dX_t = \mu dt + \sigma dW_t$.
+
+### Trick 5: Martingale Representation
+
+Any $\mathcal{F}_t$-martingale can be written as an Ito integral:
+
+$$M_t = M_0 + \int_0^t \phi_s \, dW_s$$
+
+### Trick 6: Markov Chain Analysis
+
+For finding stationary distributions:
+1. Set up $\boldsymbol{\pi}P = \boldsymbol{\pi}$
+2. Add constraint $\sum_i \pi_i = 1$
+3. Solve linear system
+
+### Trick 7: Value Iteration Convergence
+
+Use contraction mapping: $\|V_{k+1} - V^*\| \leq \gamma \|V_k - V^*\|$
+
+Converges geometrically with rate $\gamma$.
+
+### Trick 8: Exploiting Symmetry
+
+In Markov chains, use symmetry to reduce computation (e.g., random walk on symmetric graph).
+
+### Trick 9: First-Step Analysis for MDPs
+
+$$V(s) = \max_a \left[R(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s')\right]$$
+
+Condition on first action, solve recursively.
+
+### Trick 10: Dimensional Analysis
+
+Check units: if $W_t$ has units $\sqrt{\text{time}}$, then $dW_t$ has units $(\text{time})^{1/2}$ and $(dW_t)^2$ has units of time.
+
+## Interview Problem Types
+
+### Type 1: Brownian Motion Properties
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Standard Brownian motion $W_t$ | Mean, variance, distribution, covariance | Use $E[W_t] = 0$, $\text{Var}(W_t) = t$, $\text{Cov}(W_s, W_t) = \min(s,t)$ |
+
+### Type 2: Applying Ito's Lemma
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| SDE for $X_t$, function $f(X_t, t)$ | SDE for $f(X_t, t)$ | Apply Ito's lemma: include $\frac{1}{2}\sigma^2 \frac{\partial^2 f}{\partial x^2}$ term |
+
+### Type 3: Solving SDEs
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Linear SDE or geometric SDE | Explicit solution | Use Ito's lemma with appropriate transformation (e.g., $\log$ for GBM) |
+
+### Type 4: Quadratic Variation Calculations
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Stochastic process | Quadratic variation $[X]_t$ | Use $dW_t \cdot dW_t = dt$, $dt \cdot dt = 0$, sum quadratic terms |
+
+### Type 5: Ito Product Rule
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Two Ito processes $X_t$, $Y_t$ | Differential of $X_t Y_t$ | Apply $d(XY) = X dY + Y dX + dX dY$ with multiplication table |
+
+### Type 6: Markov Chain Stationary Distribution
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Transition matrix $P$ | Stationary distribution $\boldsymbol{\pi}$ | Solve $\boldsymbol{\pi}P = \boldsymbol{\pi}$ with $\sum_i \pi_i = 1$ |
+
+### Type 7: MDP Value Functions
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| MDP parameters $(S, A, P, R, \gamma)$ | Optimal value $V^*(s)$ or policy $\pi^*$ | Use Bellman optimality equation, value iteration, or policy iteration |
+
+### Type 8: First Passage Times
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Brownian motion or diffusion, barrier | Expected hitting time or probability | Use martingale methods, reflection principle, or solve PDE |
+
+### Type 9: Geometric Brownian Motion
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| GBM parameters $\mu$, $\sigma$, initial $S_0$ | Distribution of $S_t$, expectation, probability | Use log-normal distribution: $\log S_t \sim \mathcal{N}(...)$ |
+
+### Type 10: Martingale Properties
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Stochastic process | Check if martingale, compute expectations at stopping times | Verify $E[X_t \| \mathcal{F}_s] = X_s$, use optional stopping |
+
+## Common Pitfalls
+
+### Pitfall 1: Forgetting the Second-Order Term in Ito's Lemma
+
+**Wrong**: Using ordinary chain rule without $\frac{1}{2}\sigma^2 \frac{\partial^2 f}{\partial x^2}$ term
+
+**Correct**: Always include the second-order term from quadratic variation
+
+### Pitfall 2: Confusing Ito and Stratonovich Integrals
+
+**Wrong**: Assuming stochastic integrals follow ordinary calculus rules
+
+**Check**: Ito uses left-endpoint; Stratonovich uses midpoint; they give different results
+
+### Pitfall 3: Incorrect Multiplication Rules
+
+**Wrong**: Treating $(dW_t)^2$ as zero like $(dt)^2$
+
+**Correct**: $(dW_t)^2 = dt$ due to quadratic variation
+
+### Pitfall 4: Misapplying Product Rule
+
+**Wrong**: Using $d(XY) = X dY + Y dX$ without the $dX dY$ term
+
+**Correct**: Include $dX dY$ term (it doesn't vanish in stochastic calculus)
+
+### Pitfall 5: Assuming Differentiability
+
+**Wrong**: Trying to compute $\frac{dW_t}{dt}$ (doesn't exist)
+
+**Correct**: Work with differentials $dW_t$ directly
+
+### Pitfall 6: Non-Adapted Processes in Ito Integral
+
+**Wrong**: Using future information in the integrand
+
+**Check**: Integrand must be adapted (known at time $t$)
+
+### Pitfall 7: Wrong Stationary Distribution
+
+**Wrong**: Finding eigenvector of $P$ instead of row vector satisfying $\boldsymbol{\pi}P = \boldsymbol{\pi}$
+
+**Check**: $\boldsymbol{\pi}$ is a row vector (probability distribution)
+
+### Pitfall 8: Forgetting Discount Factor in MDP
+
+**Wrong**: Omitting $\gamma$ in Bellman equations
+
+**Correct**: Always include discount factor in value functions
+
+### Pitfall 9: Confusing State and Action Values
+
+**Wrong**: Using $V(s,a)$ notation (incorrect)
+
+**Correct**: $V(s)$ for state value, $Q(s,a)$ for action value
+
+## Quick Reference: Key Formulas
+
+**Brownian Motion Properties**:
+
+$$E[W_t] = 0, \quad \text{Var}(W_t) = t, \quad \text{Cov}(W_s, W_t) = \min(s,t)$$
+
+**Quadratic Variation**:
+
+$$[W]_t = t, \quad (dW_t)^2 = dt$$
+
+**Ito's Lemma**:
+
+$$df(X_t, t) = \left(\frac{\partial f}{\partial t} + \mu \frac{\partial f}{\partial x} + \frac{1}{2}\sigma^2 \frac{\partial^2 f}{\partial x^2}\right) dt + \sigma \frac{\partial f}{\partial x} dW_t$$
+
+**Ito Isometry**:
+
+$$E\left[\left(\int_0^t f(s) dW_s\right)^2\right] = E\left[\int_0^t f(s)^2 ds\right]$$
+
+**Geometric Brownian Motion Solution**:
+
+$$S_t = S_0 \exp\left(\left(\mu - \frac{\sigma^2}{2}\right)t + \sigma W_t\right)$$
+
+**Ito Product Rule**:
+
+$$d(X_t Y_t) = X_t dY_t + Y_t dX_t + dX_t dY_t$$
+
+**Bellman Optimality**:
+
+$$V^*(s) = \max_a \left[R(s,a) + \gamma \sum_{s'} P(s'|s,a) V^*(s')\right]$$
+
+**Stationary Distribution**:
+
+$$\boldsymbol{\pi}P = \boldsymbol{\pi}, \quad \sum_i \pi_i = 1$$
+
+## Practice Problem Categories
+
+- Computing Brownian motion expectations and covariances
+- Applying Ito's lemma to polynomial, exponential, logarithmic functions
+- Solving linear SDEs (Ornstein-Uhlenbeck)
+- Solving geometric SDEs (GBM, CIR)
+- Quadratic variation calculations
+- Ito integral properties
+- Product rule for stochastic processes
+- First passage time problems
+- Reflection principle applications
+- Martingale verification
+- Optional stopping theorem
+- Change of measure (Girsanov)
+- Feynman-Kac applications
+- Markov chain classification (recurrent/transient)
+- Finding stationary distributions
+- Long-run proportions
+- Continuous-time Markov chains
+- Value iteration for MDPs
+- Policy iteration for MDPs
+- Q-learning basics
+- Finite vs. infinite horizon MDPs
+- Optimal stopping problems
+- Stochastic control
+- Black-Scholes derivation
+- Option pricing via risk-neutral measure
+

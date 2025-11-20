@@ -1,0 +1,145 @@
+---
+title: FFT and Numerical Algorithms
+description: In-depth guide to FFT, DFT, Polynomial Multiplication, and Number Theoretic Transform
+---
+
+# FFT and Numerical Algorithms
+
+## Fundamental Concepts
+
+### Discrete Fourier Transform (DFT)
+Transforms a sequence of time-domain values to frequency-domain components.
+Given sequence $A = [a_0, a_1, \dots, a_{n-1}]$, the DFT is a sequence $Y = [y_0, y_1, \dots, y_{n-1}]$:
+
+$$y_k = \sum_{j=0}^{n-1} a_j \omega_n^{jk}$$
+
+where $\omega_n = e^{2\pi i / n}$ is the $n$-th complex root of unity.
+**Complexity**: Naive matrix vector multiplication is $O(n^2)$.
+
+### Fast Fourier Transform (FFT)
+An algorithm to compute DFT in $O(n \log n)$.
+**Key Idea**: Divide and Conquer.
+Split polynomial $A(x) = a_0 + a_1 x + \dots + a_{n-1}x^{n-1}$ into even and odd coefficients:
+$$A(x) = A_{even}(x^2) + x A_{odd}(x^2)$$
+Evaluate at roots of unity $\omega_n^k$.
+Symmetry property: $\omega_n^{k + n/2} = -\omega_n^k$.
+We can compute $A(\omega_n^k)$ and $A(\omega_n^{k+n/2})$ using one evaluation of $A_{even}$ and $A_{odd}$.
+
+## Implementation
+
+### Recursive FFT (Cooley-Tukey)
+Assumes $n$ is a power of 2.
+
+```python
+import cmath
+
+def fft(a):
+    n = len(a)
+    if n == 1: return a
+    
+    a_even = a[0::2]
+    a_odd = a[1::2]
+    
+    y_even = fft(a_even)
+    y_odd = fft(a_odd)
+    
+    y = [0] * n
+    w_n = cmath.exp(2j * cmath.pi / n)
+    w = 1
+    
+    for k in range(n // 2):
+        y[k] = y_even[k] + w * y_odd[k]
+        y[k + n // 2] = y_even[k] - w * y_odd[k]
+        w *= w_n
+        
+    return y
+```
+
+### Inverse FFT
+Recover coefficients from point-values.
+**Formula**: Same as FFT but use $\omega_n^{-1}$ (conjugate) and divide by $n$.
+
+```python
+def ifft(y):
+    n = len(y)
+    # Compute FFT using conjugate values
+    y_conj = [val.conjugate() for val in y]
+    result = fft(y_conj)
+    # Scale by n and take conjugate
+    return [val.conjugate() / n for val in result]
+```
+
+## Applications
+
+### 1. Polynomial Multiplication
+Multiplying two polynomials of degree $n$ takes $O(n^2)$ naively.
+**FFT Approach**:
+1.  **Point-Value Form**: Evaluate $A(x)$ and $B(x)$ at $2n$ points using FFT. ($O(n \log n)$).
+2.  **Pointwise Mult**: $C(x_k) = A(x_k) \cdot B(x_k)$. ($O(n)$).
+3.  **Interpolation**: Convert $C$ back to coefficients using Inverse FFT. ($O(n \log n)$).
+
+**Total**: $O(n \log n)$.
+
+### 2. Big Integer Multiplication
+Large integers can be treated as polynomials (coefficients are digits).
+Use FFT to multiply numbers with millions of digits (Schönhage-Strassen algorithm).
+
+### 3. String Matching w/ Wildcards
+Can be solved using FFT by encoding characters as numbers and formulating a convolution.
+
+## Advanced Concepts
+
+### 1. Number Theoretic Transform (NTT)
+FFT over Finite Fields $\mathbb{Z}_p$ instead of Complex numbers.
+**Why?**: Avoids floating point precision errors. Exact integer arithmetic.
+**Requirement**: Modulo $p$ must be of form $c \cdot 2^k + 1$ (e.g., $998244353$).
+**Root of Unity**: Primitive root $g$ modulo $p$. $\omega_n \equiv g^{(p-1)/n} \pmod p$.
+
+### 2. Iterative FFT
+Recursive FFT has overhead. Iterative version uses **Bit-Reversal Permutation**.
+Swaps element at index $i$ with element at bit-reversed $i$. Process layers bottom-up.
+
+## Interview Problem Types
+
+### Type 1: Polynomial Operations
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Two Polynomials | Product | FFT convolution. |
+| Large Integers | Product | Convert to digit lists -> FFT -> Carry handling. |
+
+### Type 2: Signal Processing (Rare)
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Time series | Frequency components | FFT. |
+
+### Type 3: Convolutional Problems
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Arrays A, B | Array C where $C[k] = \sum A[i]B[k-i]$ | This is definition of convolution. Use FFT. |
+
+## Common Pitfalls
+
+### Pitfall 1: Array Size Padding
+**Wrong**: Computing FFT of size $n$ for product of two degree $n$ polynomials.
+**Correct**: Product has degree $2n$. Must pad arrays with zeros to size nearest power of 2 $\ge 2n$.
+
+### Pitfall 2: Precision Errors
+**Wrong**: Using `float` for exact integer problems.
+**Correct**: Use NTT or be careful with `round()` after Inverse FFT.
+
+### Pitfall 3: Recursion Depth
+**Wrong**: Deep recursion for large $N$.
+**Correct**: Use Iterative FFT for performance.
+
+## Quick Reference
+
+-   **DFT**: $O(N^2)$.
+-   **FFT**: $O(N \log N)$.
+-   **Convolution**: $A * B \iff \text{IFFT}(\text{FFT}(A) \cdot \text{FFT}(B))$.
+-   **Roots of Unity**: $e^{2\pi i k / n}$.
+-   **Bit Reversal**: Permutation needed for iterative FFT.
+
+## Practice Problem Categories
+
+-   **Multiply Strings**: LeetCode (usually solved with naive $O(N^2)$ or Karatsuba, but FFT works).
+-   **Codeforces**: Many hard Combinatorics problems rely on NTT (generating functions).

@@ -1,0 +1,532 @@
+---
+title: Neural Networks
+description: "Deep Learning foundations: Backpropagation, Activations, and Loss Functions"
+---
+
+# Neural Networks
+
+## Fundamentals
+
+### 1. The Perceptron
+Basic unit of a neural network. Linear transformation followed by activation.
+
+**Forward Pass**:
+$$z = w^T x + b$$
+$$a = \sigma(z)$$
+
+where $\sigma$ is an activation function, $w$ are weights, $b$ is bias.
+
+**Decision Boundary** (binary classification): Hyperplane $w^T x + b = 0$.
+
+### 2. Multi-Layer Perceptron (MLP)
+Stack of layers. Each layer: $a^{(l)} = \sigma(W^{(l)} a^{(l-1)} + b^{(l)})$.
+
+**Universal Approximation Theorem**: A feedforward network with a single hidden layer containing a finite number of neurons can approximate any continuous function on compact subsets of $\mathbb{R}^n$ (with mild assumptions on activation function).
+
+## Activation Functions
+
+### 1. Sigmoid
+Squashes output to $(0, 1)$. Used for binary classification probabilities.
+
+$$\sigma(z) = \frac{1}{1 + e^{-z}}$$
+
+**Derivative**:
+$$\sigma'(z) = \sigma(z)(1 - \sigma(z))$$
+
+**Pros**: Smooth, outputs interpretable as probabilities.
+**Cons**: Vanishing gradients ($z \to \pm \infty, \sigma' \to 0$), not zero-centered, computationally expensive.
+
+### 2. Tanh (Hyperbolic Tangent)
+Squashes output to $(-1, 1)$. Zero-centered (better than Sigmoid).
+
+$$\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}} = 2\sigma(2z) - 1$$
+
+**Derivative**:
+$$\tanh'(z) = 1 - \tanh^2(z)$$
+
+**Pros**: Zero-centered.
+**Cons**: Still suffers from vanishing gradients.
+
+### 3. ReLU (Rectified Linear Unit)
+Standard for hidden layers. Introduced non-linearity while being computationally efficient.
+
+$$f(z) = \max(0, z)$$
+
+**Derivative**:
+$$f'(z) = \begin{cases} 1 & z > 0 \\ 0 & z < 0 \end{cases}$$
+
+**Pros**: 
+-   Solves vanishing gradient (for $z>0$).
+-   Computationally efficient.
+-   Sparse activation (neurons with negative input are inactive).
+-   Empirically converges faster than Sigmoid/Tanh.
+
+**Cons**: 
+-   **Dead ReLU**: Neurons can die if inputs always $\leq 0$. Gradient is always 0, so weights never update.
+-   Not zero-centered.
+
+### 4. Leaky ReLU
+Addresses dead ReLU problem by allowing small negative slope.
+
+$$f(z) = \begin{cases} z & z > 0 \\ \alpha z & z \leq 0 \end{cases}$$
+
+Typical $\alpha = 0.01$.
+
+**Parametric ReLU (PReLU)**: Learn $\alpha$ as a parameter.
+
+### 5. ELU (Exponential Linear Unit)
+Smooth approximation to ReLU with negative values.
+
+$$f(z) = \begin{cases} z & z > 0 \\ \alpha(e^z - 1) & z \leq 0 \end{cases}$$
+
+**Pros**: Mean activation closer to zero, smooth, no dead neurons.
+**Cons**: Computationally more expensive (exponential).
+
+### 6. GELU (Gaussian Error Linear Unit)
+Used in Transformers (BERT, GPT).
+
+$$\text{GELU}(z) = z \cdot \Phi(z)$$
+
+where $\Phi(z)$ is Gaussian CDF. Approximation: $0.5z(1 + \tanh[\sqrt{2/\pi}(z + 0.044715z^3)])$.
+
+### 7. Swish (SiLU)
+Self-gated activation.
+
+$$f(z) = z \cdot \sigma(z)$$
+
+**Pros**: Smooth, non-monotonic, performs well in deep networks.
+
+### 8. Softmax
+Generalization of Sigmoid to Multi-Class ($K$ classes). Output vector sums to 1 (probability distribution).
+
+$$\text{Softmax}(z)_i = \frac{e^{z_i}}{\sum_{j=1}^K e^{z_j}}$$
+
+**Derivative** (Jacobian):
+$$\frac{\partial \text{Softmax}(z)_i}{\partial z_j} = \text{Softmax}(z)_i (\delta_{ij} - \text{Softmax}(z)_j)$$
+
+**Numerical Stability**: Subtract max before exp.
+$$\text{Softmax}(z)_i = \frac{e^{z_i - \max(z)}}{\sum_{j=1}^K e^{z_j - \max(z)}}$$
+
+### 9. Softplus
+Smooth approximation to ReLU.
+
+$$f(z) = \log(1 + e^z)$$
+
+**Derivative**: Sigmoid.
+
+## Loss Functions
+
+### 1. Mean Squared Error (MSE)
+Standard for regression.
+
+$$L = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2$$
+
+**Gradient**:
+$$\frac{\partial L}{\partial \hat{y}_i} = \frac{2}{n}(\hat{y}_i - y_i)$$
+
+### 2. Mean Absolute Error (MAE)
+More robust to outliers than MSE.
+
+$$L = \frac{1}{n} \sum_{i=1}^n |y_i - \hat{y}_i|$$
+
+**Gradient**: $\text{sign}(\hat{y}_i - y_i)$ (discontinuous at 0).
+
+### 3. Huber Loss
+Combines MSE (for small errors) and MAE (for large errors).
+
+$$L_\delta(y, \hat{y}) = \begin{cases} \frac{1}{2}(y - \hat{y})^2 & |y - \hat{y}| \leq \delta \\ \delta |y - \hat{y}| - \frac{1}{2}\delta^2 & |y - \hat{y}| > \delta \end{cases}$$
+
+### 4. Binary Cross-Entropy
+Standard for binary classification.
+
+$$L = -\frac{1}{n} \sum_{i=1}^n [y_i \log \hat{y}_i + (1-y_i) \log (1-\hat{y}_i)]$$
+
+**Gradient** (w.r.t. logits $z$ if $\hat{y} = \sigma(z)$):
+$$\frac{\partial L}{\partial z} = \hat{y} - y$$
+
+### 5. Categorical Cross-Entropy
+Standard for multi-class classification.
+
+$$L = -\frac{1}{n} \sum_{i=1}^n \sum_{c=1}^K y_{ic} \log \hat{y}_{ic}$$
+
+where $y_{ic}$ is one-hot encoded.
+
+**With Softmax**:
+$$\frac{\partial L}{\partial z_i} = \hat{y}_i - y_i$$
+
+Ideally simple gradient: prediction - target.
+
+### 6. Hinge Loss (SVM Loss)
+For maximum-margin classification.
+
+$$L = \frac{1}{n} \sum_{i=1}^n \max(0, 1 - y_i \hat{y}_i)$$
+
+where $y_i \in \{-1, +1\}$.
+
+**Multi-Class Hinge**: $L = \sum_{j \neq y_i} \max(0, s_j - s_{y_i} + 1)$ where $s$ are class scores.
+
+### 7. Kullback-Leibler Divergence
+Measures difference between two probability distributions.
+
+$$D_{KL}(P \| Q) = \sum_{i} P(i) \log \frac{P(i)}{Q(i)}$$
+
+Used in VAEs (regularization term).
+
+### 8. Focal Loss
+Addresses class imbalance by down-weighting easy examples.
+
+$$L = -\alpha (1 - \hat{y})^\gamma y \log \hat{y} - (1-\alpha) \hat{y}^\gamma (1-y) \log(1-\hat{y})$$
+
+$\gamma$ (focusing parameter, typically 2) reduces loss for well-classified examples.
+
+## Backpropagation
+Algorithm to compute gradients of loss function $L$ with respect to weights using Chain Rule. Enables efficient training of deep networks.
+
+**Goal**: Efficiently compute $\frac{\partial L}{\partial w_{ij}^{(l)}}$ for all weights.
+
+**Forward Pass (Computation Graph)**:
+$$z^{(l)} = W^{(l)} a^{(l-1)} + b^{(l)}$$
+$$a^{(l)} = \sigma(z^{(l)})$$
+
+**Backward Pass (Error Propagation)**:
+The core idea is to compute the "error" $\delta^{(l)} = \frac{\partial L}{\partial z^{(l)}}$ at layer $l$, which represents sensitivity of loss to pre-activations.
+
+1.  **Output Layer Error**:
+    $$\delta^{(L)} = \nabla_a L \odot \sigma'(z^{(L)})$$
+    
+    For MSE: $\delta^{(L)} = (a^{(L)} - y) \odot \sigma'(z^{(L)})$.
+    
+    For Cross-Entropy + Softmax: $\delta^{(L)} = a^{(L)} - y$ (simplified gradient).
+
+2.  **Hidden Layer Error**:
+    Propagate error backwards using weights and activation derivative.
+    $$\delta^{(l)} = ((W^{(l+1)})^T \delta^{(l+1)}) \odot \sigma'(z^{(l)})$$
+
+3.  **Gradients**:
+    Using the computed $\delta^{(l)}$:
+    $$\frac{\partial L}{\partial W^{(l)}} = \delta^{(l)} (a^{(l-1)})^T$$
+    $$\frac{\partial L}{\partial b^{(l)}} = \delta^{(l)}$$
+
+**Why Backward?**:
+Since a neural network is a composite function $f(g(h(x)))$, the Chain Rule multiplies derivatives from the outside in (output to input). Computing gradients forward would require a Jacobian matrix multiplication for every layer, which is computationally expensive ($O(N^3)$ or $O(N^4)$) compared to the backward vector-matrix products ($O(W)$ where $W$ is number of weights). Backprop is essentially **Reverse-Mode Automatic Differentiation**.
+
+**Computational Graph**: Represent computation as directed acyclic graph. Forward pass computes values, backward pass computes gradients.
+
+## Regularization Techniques
+
+### 1. L2 Regularization (Weight Decay)
+Add penalty term to loss:
+$$L_{total} = L + \frac{\lambda}{2} \sum_{l} \|W^{(l)}\|_F^2$$
+
+**Effect**: Weights decay toward zero. Prevents large weights, reduces overfitting.
+
+**Update** (in SGD):
+$$W \leftarrow W - \eta(\nabla L + \lambda W) = (1 - \eta\lambda)W - \eta \nabla L$$
+
+### 2. L1 Regularization
+$$L_{total} = L + \lambda \sum_{l} \|W^{(l)}\|_1$$
+
+**Effect**: Encourages sparsity (some weights become exactly zero).
+
+### 3. Dropout
+During training, randomly set fraction $p$ of neurons to zero.
+
+**Training**: $a^{(l)} = \text{mask} \odot \sigma(z^{(l)})$ where mask $\sim \text{Bernoulli}(1-p)$.
+
+**Test**: Use all neurons but scale activations by $(1-p)$ (or use inverted dropout during training).
+
+**Effect**: Prevents co-adaptation of neurons, acts as ensemble of networks.
+
+**Typical**: $p = 0.5$ for hidden layers, $p = 0.2$ for input.
+
+### 4. Batch Normalization
+Normalize inputs to each layer to have zero mean and unit variance.
+
+**Transform**:
+$$\hat{z} = \frac{z - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}$$
+$$y = \gamma \hat{z} + \beta$$
+
+where $\mu_B, \sigma_B$ are mini-batch mean/variance, $\gamma, \beta$ are learned parameters.
+
+**Benefits**:
+-   Reduces internal covariate shift.
+-   Allows higher learning rates.
+-   Acts as regularizer (adds noise).
+-   Reduces dependence on initialization.
+
+**At Test Time**: Use running averages of $\mu, \sigma$ from training.
+
+**Variants**: Layer Norm (normalize across features), Group Norm, Instance Norm.
+
+### 5. Early Stopping
+Stop training when validation error starts increasing.
+
+**Patience**: Allow $n$ epochs of no improvement before stopping.
+
+### 6. Data Augmentation
+Artificially expand training set via transformations (rotations, crops, flips, noise, etc.).
+
+## Optimization for Deep Learning
+
+### 1. Gradient Descent Variants
+See Optimization section for details on SGD, Momentum, Adam, etc.
+
+### 2. Learning Rate Schedules
+
+**Step Decay**: Reduce LR by factor every $n$ epochs.
+
+**Exponential Decay**: $\eta_t = \eta_0 e^{-kt}$.
+
+**1/t Decay**: $\eta_t = \frac{\eta_0}{1 + kt}$.
+
+**Cosine Annealing**: $\eta_t = \eta_{min} + \frac{1}{2}(\eta_{max} - \eta_{min})(1 + \cos(\frac{T_{cur}}{T_{max}}\pi))$.
+
+**Warmup**: Gradually increase LR at start.
+
+### 3. Gradient Clipping
+Prevent exploding gradients (common in RNNs).
+
+**Norm Clipping**: If $\|\nabla\| > \text{threshold}$, scale: $\nabla \leftarrow \frac{\text{threshold}}{\|\nabla\|} \nabla$.
+
+**Value Clipping**: Clip each gradient element to $[-c, c]$.
+
+## Weight Initialization
+
+Poor initialization can cause vanishing/exploding gradients or slow convergence.
+
+### 1. Zero Initialization
+**Bad**: All neurons learn the same features (symmetry problem).
+
+### 2. Small Random Values
+$W \sim \mathcal{N}(0, 0.01^2)$. Can work for shallow networks but causes vanishing activations/gradients in deep networks.
+
+### 3. Xavier/Glorot Initialization
+For Sigmoid/Tanh activations. Maintains variance of activations across layers.
+
+$$W \sim \mathcal{N}\left(0, \frac{2}{n_{in} + n_{out}}\right)$$
+
+or Uniform:
+$$W \sim \mathcal{U}\left(-\sqrt{\frac{6}{n_{in} + n_{out}}}, \sqrt{\frac{6}{n_{in} + n_{out}}}\right)$$
+
+### 4. He Initialization
+For ReLU activations. Accounts for fact that half of neurons are inactive.
+
+$$W \sim \mathcal{N}\left(0, \frac{2}{n_{in}}\right)$$
+
+### 5. Bias Initialization
+Typically initialize to zero. For ReLU, can use small positive value (e.g., 0.01) to ensure neurons are initially active.
+
+## Convolutional Neural Networks (CNNs)
+
+### 1. Convolution Layer
+Apply filters (kernels) to extract spatial features.
+
+**Operation**:
+$$(f * g)[i, j] = \sum_m \sum_n f[m, n] \cdot g[i-m, j-n]$$
+
+**Hyperparameters**:
+-   **Filter Size**: $k \times k$ (typically 3x3 or 5x5).
+-   **Stride**: Step size (1 = dense, 2 = skip every other).
+-   **Padding**: Add zeros around border (same = preserve size, valid = no padding).
+-   **Number of Filters**: Determines depth of output.
+
+**Output Size**:
+$$\text{out} = \frac{n + 2p - k}{s} + 1$$
+
+where $n$ = input size, $p$ = padding, $k$ = kernel size, $s$ = stride.
+
+**Parameters**: $k \times k \times d_{in} \times d_{out}$ (much fewer than fully connected).
+
+### 2. Pooling Layer
+Downsample to reduce spatial dimensions.
+
+**Max Pooling**: Take max in each window (most common).
+
+**Average Pooling**: Take average.
+
+**Global Average Pooling**: Average entire feature map to single value (used before final FC layer).
+
+**Effect**: Translation invariance, reduces overfitting, fewer parameters.
+
+### 3. Architecture Patterns
+-   **Conv-ReLU-Pool** (repeat)
+-   **Conv-ReLU-Conv-ReLU-Pool** (repeat, deeper)
+
+**Famous Architectures**: LeNet, AlexNet, VGGNet, GoogLeNet (Inception), ResNet, EfficientNet.
+
+## Recurrent Neural Networks (RNNs)
+
+### 1. Vanilla RNN
+Process sequences by maintaining hidden state.
+
+**Forward Pass**:
+$$h_t = \tanh(W_{hh} h_{t-1} + W_{xh} x_t + b_h)$$
+$$y_t = W_{hy} h_t + b_y$$
+
+**Backpropagation Through Time (BPTT)**: Unroll network through time, apply backprop.
+
+**Problem**: Vanishing/exploding gradients over long sequences.
+
+### 2. Long Short-Term Memory (LSTM)
+Addresses vanishing gradient via gating mechanisms and cell state.
+
+**Gates**:
+-   **Forget Gate**: $f_t = \sigma(W_f [h_{t-1}, x_t] + b_f)$ (what to forget from cell state)
+-   **Input Gate**: $i_t = \sigma(W_i [h_{t-1}, x_t] + b_i)$ (what new info to add)
+-   **Candidate**: $\tilde{C}_t = \tanh(W_C [h_{t-1}, x_t] + b_C)$
+-   **Output Gate**: $o_t = \sigma(W_o [h_{t-1}, x_t] + b_o)$ (what to output)
+
+**Updates**:
+$$C_t = f_t \odot C_{t-1} + i_t \odot \tilde{C}_t$$
+$$h_t = o_t \odot \tanh(C_t)$$
+
+**Key Idea**: Cell state $C_t$ provides highway for gradients to flow through time.
+
+### 3. Gated Recurrent Unit (GRU)
+Simpler alternative to LSTM with fewer parameters.
+
+**Gates**:
+-   **Reset Gate**: $r_t = \sigma(W_r [h_{t-1}, x_t])$
+-   **Update Gate**: $z_t = \sigma(W_z [h_{t-1}, x_t])$
+-   **Candidate**: $\tilde{h}_t = \tanh(W_h [r_t \odot h_{t-1}, x_t])$
+
+**Update**:
+$$h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t$$
+
+**Comparison**: GRU has fewer parameters, LSTM slightly more expressive. Performance often similar.
+
+## Attention and Transformers
+
+### 1. Attention Mechanism
+Allows model to focus on relevant parts of input.
+
+**Scaled Dot-Product Attention**:
+$$\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
+
+where $Q$ (queries), $K$ (keys), $V$ (values) are linear projections of input.
+
+**Interpretation**: Compute similarity (dot product) between queries and keys, use as weights for values.
+
+### 2. Self-Attention
+Attention where $Q, K, V$ all come from same input. Captures dependencies within sequence.
+
+### 3. Multi-Head Attention
+Run multiple attention mechanisms in parallel, concatenate outputs.
+
+$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W^O$$
+
+where $\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)$.
+
+**Benefits**: Model different types of relationships simultaneously.
+
+### 4. Transformer Architecture
+Encoder-Decoder architecture based entirely on attention (no recurrence).
+
+**Encoder**: Stack of (Multi-Head Self-Attention + FFN) layers with residual connections and layer norm.
+
+**Decoder**: Stack of (Masked Multi-Head Self-Attention + Multi-Head Cross-Attention + FFN) layers.
+
+**Positional Encoding**: Add position information since no recurrence:
+$$PE_{(pos, 2i)} = \sin(pos / 10000^{2i/d})$$
+$$PE_{(pos, 2i+1)} = \cos(pos / 10000^{2i/d})$$
+
+**Advantages**: Parallelizable (unlike RNNs), long-range dependencies, state-of-the-art in NLP.
+
+**Famous Models**: BERT, GPT, T5, Vision Transformer (ViT).
+
+## Advanced Topics
+
+### 1. Residual Connections (ResNets)
+Skip connections that add input to output: $y = F(x) + x$.
+
+**Benefits**: Solves vanishing gradient problem, enables very deep networks (100+ layers).
+
+**Identity Mapping**: If $F(x) = 0$, layer performs identity, so easy to train.
+
+### 2. Transfer Learning
+Use pre-trained model on new task.
+
+**Approaches**:
+-   **Feature Extraction**: Freeze early layers, train only final layers.
+-   **Fine-Tuning**: Unfreeze some layers, train with small LR.
+
+**Benefits**: Faster training, better performance with limited data.
+
+### 3. Generative Adversarial Networks (GANs)
+Two networks compete: Generator $G$ creates fake data, Discriminator $D$ distinguishes real from fake.
+
+**Objective**:
+$$\min_G \max_D E_{x \sim p_{data}}[\log D(x)] + E_{z \sim p_z}[\log(1 - D(G(z)))]$$
+
+**Training**: Alternate updating $D$ and $G$.
+
+**Challenges**: Mode collapse, training instability.
+
+**Variants**: DCGAN, Wasserstein GAN, StyleGAN.
+
+### 4. Variational Autoencoders (VAEs)
+Learns probabilistic latent representation.
+
+**Encoder**: $q(z|x)$ approximates posterior.
+**Decoder**: $p(x|z)$ reconstructs input.
+
+**Loss** (ELBO):
+$$L = E_{z \sim q(z|x)}[\log p(x|z)] - D_{KL}(q(z|x) \| p(z))$$
+
+Reconstruction term + KL regularization (enforce latent prior, typically $\mathcal{N}(0, I)$).
+
+**Reparameterization Trick**: $z = \mu + \sigma \odot \epsilon$ where $\epsilon \sim \mathcal{N}(0, I)$ allows backprop through sampling.
+
+### 5. Neural Architecture Search (NAS)
+Automate design of neural network architectures.
+
+**Approaches**: Reinforcement learning, evolutionary algorithms, gradient-based (DARTS).
+
+### 6. Knowledge Distillation
+Train small "student" network to mimic large "teacher" network.
+
+**Loss**: Minimize KL divergence between student and teacher outputs (softened with temperature).
+
+**Benefits**: Model compression, faster inference.
+
+## Pseudocode: Neural Network Training
+
+```python
+# Simple 2-layer NN
+def train(X, y, hidden_size=64, lr=0.01, epochs=100):
+    W1 = randn(input_dim, hidden_size) * sqrt(2/input_dim)  # He init
+    b1 = zeros(hidden_size)
+    W2 = randn(hidden_size, output_dim) * sqrt(2/hidden_size)
+    b2 = zeros(output_dim)
+    
+    for epoch in range(epochs):
+        # Forward
+        z1 = X @ W1 + b1
+        a1 = relu(z1)
+        z2 = a1 @ W2 + b2
+        y_pred = softmax(z2)
+        
+        # Loss
+        loss = cross_entropy(y, y_pred)
+        
+        # Backward (Gradients)
+        dz2 = y_pred - y  # Gradient of CE + Softmax
+        dW2 = a1.T @ dz2 / batch_size
+        db2 = sum(dz2, axis=0) / batch_size
+        
+        da1 = dz2 @ W2.T
+        dz1 = da1 * (z1 > 0)  # ReLU derivative
+        dW1 = X.T @ dz1 / batch_size
+        db1 = sum(dz1, axis=0) / batch_size
+        
+        # Update (SGD with momentum can be added)
+        W1 -= lr * dW1
+        b1 -= lr * db1
+        W2 -= lr * dW2
+        b2 -= lr * db2
+        
+        if epoch % 10 == 0:
+            print(f"Epoch {epoch}, Loss: {loss:.4f}")
+    
+    return W1, b1, W2, b2
+```

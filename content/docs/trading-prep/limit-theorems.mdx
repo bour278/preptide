@@ -1,0 +1,676 @@
+---
+title: Limit Theorems
+description: Interview prep for law of large numbers, central limit theorem, and concentration inequalities
+---
+
+# Limit Theorems and Concentration Inequalities
+
+## Fundamental Concepts
+
+### Convergence of Random Variables
+
+There are several modes of convergence for sequences of random variables:
+
+**1. Convergence in Distribution (Weak Convergence)**
+
+$X_n \xrightarrow{d} X$ if:
+
+$$\lim_{n \to \infty} F_{X_n}(x) = F_X(x)$$
+
+for all $x$ where $F_X$ is continuous.
+
+**Notation**: Also written as $X_n \Rightarrow X$ or $X_n \xrightarrow{\mathcal{L}} X$.
+
+**2. Convergence in Probability**
+
+$X_n \xrightarrow{P} X$ if for all $\epsilon > 0$:
+
+$$\lim_{n \to \infty} P(|X_n - X| > \epsilon) = 0$$
+
+**Interpretation**: The probability that $X_n$ is far from $X$ goes to zero.
+
+**3. Convergence Almost Surely (Strong Convergence)**
+
+$X_n \xrightarrow{a.s.} X$ if:
+
+$$P\left(\lim_{n \to \infty} X_n = X\right) = 1$$
+
+**Interpretation**: $X_n$ converges to $X$ along almost every sample path.
+
+**4. Convergence in $L^p$ (Mean)**
+
+$X_n \xrightarrow{L^p} X$ if:
+
+$$\lim_{n \to \infty} E[|X_n - X|^p] = 0$$
+
+**Special cases**:
+- $p = 1$: Convergence in mean
+- $p = 2$: Convergence in mean square
+
+### Hierarchy of Convergence
+
+**Relationships** (stronger → weaker):
+
+$$\text{a.s.} \Rightarrow \text{in probability} \Rightarrow \text{in distribution}$$
+
+$$L^p \text{ convergence} \Rightarrow \text{in probability}$$
+
+**Key facts**:
+- Almost sure convergence is strongest
+- Convergence in distribution is weakest
+- $L^p$ convergence for $p > q$ implies $L^q$ convergence
+- Convergence in distribution to a constant implies convergence in probability to that constant
+
+## Law of Large Numbers (LLN)
+
+### Weak Law of Large Numbers (WLLN)
+
+Let $X_1, X_2, ...$ be i.i.d. random variables with $E[X_i] = \mu$ and $\text{Var}(X_i) = \sigma^2 < \infty$.
+
+Define the sample mean:
+
+$$\bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$$
+
+**WLLN**: $\bar{X}_n \xrightarrow{P} \mu$
+
+**Interpretation**: For large $n$, the sample mean is close to the population mean with high probability.
+
+**Formal statement**: For all $\epsilon > 0$:
+
+$$\lim_{n \to \infty} P(|\bar{X}_n - \mu| > \epsilon) = 0$$
+
+**Proof technique**: Use Chebyshev's inequality:
+
+$$P(|\bar{X}_n - \mu| > \epsilon) \leq \frac{\text{Var}(\bar{X}_n)}{\epsilon^2} = \frac{\sigma^2}{n\epsilon^2} \to 0$$
+
+### Strong Law of Large Numbers (SLLN)
+
+Under the same conditions as WLLN:
+
+**SLLN**: $\bar{X}_n \xrightarrow{a.s.} \mu$
+
+**Interpretation**: The sample mean converges to the population mean along almost every sample path (not just in probability).
+
+**Formal statement**:
+
+$$P\left(\lim_{n \to \infty} \bar{X}_n = \mu\right) = 1$$
+
+**Comparison with WLLN**:
+- SLLN is stronger than WLLN
+- SLLN requires only $E[|X_i|] < \infty$ (finite mean), not finite variance
+- SLLN guarantees convergence along almost every realization
+
+### Applications of LLN
+
+**Monte Carlo simulation**: Sample mean approximates expected value
+
+**Frequency interpretation**: Relative frequency converges to probability
+
+**Casino/insurance**: Average payout converges to expected payout (law of averages)
+
+**Polling**: Sample proportion converges to population proportion
+
+## Central Limit Theorem (CLT)
+
+### Classical Central Limit Theorem
+
+Let $X_1, X_2, ...$ be i.i.d. random variables with $E[X_i] = \mu$ and $\text{Var}(X_i) = \sigma^2 < \infty$.
+
+Define:
+
+$$S_n = \sum_{i=1}^n X_i, \quad \bar{X}_n = \frac{S_n}{n}$$
+
+**CLT**: The standardized sum converges in distribution to standard normal:
+
+$$\frac{S_n - n\mu}{\sigma\sqrt{n}} = \frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} \xrightarrow{d} \mathcal{N}(0, 1)$$
+
+**Equivalently**:
+
+$$S_n \xrightarrow{d} \mathcal{N}(n\mu, n\sigma^2)$$
+
+$$\bar{X}_n \xrightarrow{d} \mathcal{N}\left(\mu, \frac{\sigma^2}{n}\right)$$
+
+**Interpretation**: For large $n$, the distribution of $\bar{X}_n$ is approximately normal, regardless of the distribution of $X_i$.
+
+**Practical form**: For large $n$:
+
+$$P\left(\frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} \leq z\right) \approx \Phi(z)$$
+
+where $\Phi$ is the standard normal CDF.
+
+### Berry-Esseen Theorem (Rate of Convergence)
+
+Provides bounds on how fast the CLT convergence occurs.
+
+If $E[|X_i|^3] = \rho < \infty$:
+
+$$\sup_x \left|P\left(\frac{S_n - n\mu}{\sigma\sqrt{n}} \leq x\right) - \Phi(x)\right| \leq \frac{C\rho}{\sigma^3\sqrt{n}}$$
+
+where $C \approx 0.4748$ is a constant.
+
+**Interpretation**: Error in normal approximation is $O(1/\sqrt{n})$.
+
+### Lindeberg-Lévy CLT (Independent, Not Identical)
+
+For independent (but not necessarily identically distributed) random variables $X_1, ..., X_n$ with $E[X_i] = \mu_i$ and $\text{Var}(X_i) = \sigma_i^2$:
+
+If certain conditions hold (Lindeberg condition), then:
+
+$$\frac{\sum_{i=1}^n X_i - \sum_{i=1}^n \mu_i}{\sqrt{\sum_{i=1}^n \sigma_i^2}} \xrightarrow{d} \mathcal{N}(0, 1)$$
+
+### Lyapunov CLT
+
+A sufficient condition for CLT to hold for independent (not identical) RVs.
+
+If for some $\delta > 0$:
+
+$$\lim_{n \to \infty} \frac{\sum_{i=1}^n E[|X_i - \mu_i|^{2+\delta}]}{(\sum_{i=1}^n \sigma_i^2)^{1 + \delta/2}} = 0$$
+
+then the CLT holds.
+
+### Multivariate CLT
+
+Let $\mathbf{X}_1, \mathbf{X}_2, ...$ be i.i.d. random vectors with $E[\mathbf{X}_i] = \boldsymbol{\mu}$ and $\text{Cov}(\mathbf{X}_i) = \Sigma$.
+
+**Multivariate CLT**:
+
+$$\sqrt{n}(\bar{\mathbf{X}}_n - \boldsymbol{\mu}) \xrightarrow{d} \mathcal{N}(\mathbf{0}, \Sigma)$$
+
+where $\bar{\mathbf{X}}_n = \frac{1}{n}\sum_{i=1}^n \mathbf{X}_i$.
+
+### Delta Method
+
+**Problem**: Find limiting distribution of $g(\bar{X}_n)$ where $g$ is a smooth function.
+
+**Delta Method**: If $\sqrt{n}(\bar{X}_n - \mu) \xrightarrow{d} \mathcal{N}(0, \sigma^2)$ and $g'(\mu) \neq 0$:
+
+$$\sqrt{n}(g(\bar{X}_n) - g(\mu)) \xrightarrow{d} \mathcal{N}(0, \sigma^2 [g'(\mu)]^2)$$
+
+**Multivariate Delta Method**: If $\sqrt{n}(\bar{\mathbf{X}}_n - \boldsymbol{\mu}) \xrightarrow{d} \mathcal{N}(\mathbf{0}, \Sigma)$:
+
+$$\sqrt{n}(g(\bar{\mathbf{X}}_n) - g(\boldsymbol{\mu})) \xrightarrow{d} \mathcal{N}\left(0, \nabla g(\boldsymbol{\mu})^T \Sigma \nabla g(\boldsymbol{\mu})\right)$$
+
+**When to use**: Finding asymptotic distributions of statistics like sample variance, correlation, etc.
+
+### Continuous Mapping Theorem
+
+If $X_n \xrightarrow{d} X$ and $g$ is continuous, then:
+
+$$g(X_n) \xrightarrow{d} g(X)$$
+
+**Use**: Transforming convergent sequences while preserving convergence in distribution.
+
+### Slutsky's Theorem
+
+If $X_n \xrightarrow{d} X$ and $Y_n \xrightarrow{P} c$ (constant), then:
+
+1. $X_n + Y_n \xrightarrow{d} X + c$
+2. $X_n Y_n \xrightarrow{d} cX$
+3. $X_n / Y_n \xrightarrow{d} X/c$ (if $c \neq 0$)
+
+**Use**: Combining convergent sequences, working with estimated variances.
+
+## Concentration Inequalities
+
+Concentration inequalities provide bounds on how much a random variable deviates from its mean.
+
+### Markov's Inequality
+
+For non-negative random variable $X$ and $a > 0$:
+
+$$P(X \geq a) \leq \frac{E[X]}{a}$$
+
+**Proof**: 
+
+$$E[X] = \int_0^\infty x f(x) dx \geq \int_a^\infty x f(x) dx \geq a \int_a^\infty f(x) dx = a \cdot P(X \geq a)$$
+
+**When to use**: Only know the mean, want rough bound.
+
+**Limitations**: Often very loose; only uses first moment.
+
+**Generalization**: For any non-negative function $\phi$ and $\phi(X) \geq 0$:
+
+$$P(X \geq a) = P(\phi(X) \geq \phi(a)) \leq \frac{E[\phi(X)]}{\phi(a)}$$
+
+### Chebyshev's Inequality
+
+For random variable $X$ with mean $\mu$ and variance $\sigma^2$, for any $k > 0$:
+
+$$P(|X - \mu| \geq k) \leq \frac{\sigma^2}{k^2}$$
+
+**Alternative form**: For any $t > 0$:
+
+$$P(|X - \mu| \geq t\sigma) \leq \frac{1}{t^2}$$
+
+**Proof**: Apply Markov's inequality to $(X - \mu)^2$:
+
+$$P(|X - \mu| \geq k) = P((X-\mu)^2 \geq k^2) \leq \frac{E[(X-\mu)^2]}{k^2} = \frac{\sigma^2}{k^2}$$
+
+**When to use**: Know mean and variance, tighter than Markov.
+
+**Key insight**: Uses second moment (variance) to get better bound than Markov.
+
+### Chernoff Bound (General Method)
+
+For any random variable $X$ and $a \in \mathbb{R}$:
+
+$$P(X \geq a) \leq \inf_{t > 0} \frac{E[e^{tX}]}{e^{ta}} = \inf_{t > 0} e^{-ta} M_X(t)$$
+
+where $M_X(t) = E[e^{tX}]$ is the MGF.
+
+**Proof**: For $t > 0$:
+
+$$P(X \geq a) = P(e^{tX} \geq e^{ta}) \leq \frac{E[e^{tX}]}{e^{ta}}$$
+
+Then optimize over $t$.
+
+**When to use**: MGF is available, want exponentially decaying bound.
+
+**Key advantage**: Provides exponential tail bounds (much stronger than polynomial bounds).
+
+### Chernoff-Hoeffding Bound
+
+For i.i.d. Bernoulli random variables $X_1, ..., X_n$ with $P(X_i = 1) = p$, let $S_n = \sum_{i=1}^n X_i$.
+
+**Upper tail**: For $\delta > 0$:
+
+$$P(S_n \geq (1+\delta)np) \leq \left(\frac{e^\delta}{(1+\delta)^{1+\delta}}\right)^{np}$$
+
+**Simplified (for $0 < \delta < 1$)**:
+
+$$P(S_n \geq (1+\delta)np) \leq e^{-\frac{\delta^2 np}{3}}$$
+
+**Lower tail**: For $0 < \delta < 1$:
+
+$$P(S_n \leq (1-\delta)np) \leq e^{-\frac{\delta^2 np}{2}}$$
+
+**Two-sided**: For $\delta > 0$:
+
+$$P(|S_n - np| \geq \delta np) \leq 2e^{-\frac{\delta^2 np}{3}}$$
+
+**When to use**: Sums of bounded independent random variables, concentration around mean.
+
+### Hoeffding's Inequality
+
+For independent random variables $X_1, ..., X_n$ with $a_i \leq X_i \leq b_i$, let $S_n = \sum_{i=1}^n X_i$.
+
+**Hoeffding's inequality**: For any $t > 0$:
+
+$$P(S_n - E[S_n] \geq t) \leq \exp\left(-\frac{2t^2}{\sum_{i=1}^n (b_i - a_i)^2}\right)$$
+
+$$P(S_n - E[S_n] \leq -t) \leq \exp\left(-\frac{2t^2}{\sum_{i=1}^n (b_i - a_i)^2}\right)$$
+
+**For sample mean**: If $X_i \in [a, b]$ and $\bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$:
+
+$$P(|\bar{X}_n - E[X]| \geq t) \leq 2\exp\left(-\frac{2nt^2}{(b-a)^2}\right)$$
+
+**When to use**: Bounded random variables, exponential concentration for sample means.
+
+### Bennett's Inequality
+
+For independent random variables $X_1, ..., X_n$ with $E[X_i] = 0$, $\text{Var}(X_i) = \sigma_i^2$, and $X_i \leq b$:
+
+$$P\left(\sum_{i=1}^n X_i \geq t\right) \leq \exp\left(-\frac{\sigma^2}{b^2} h\left(\frac{bt}{\sigma^2}\right)\right)$$
+
+where $\sigma^2 = \sum_{i=1}^n \sigma_i^2$ and $h(u) = (1+u)\ln(1+u) - u$.
+
+**When to use**: Sharper than Hoeffding when variance is small relative to range.
+
+### Bernstein's Inequality
+
+For independent random variables $X_1, ..., X_n$ with $E[X_i] = 0$, $E[X_i^2] = \sigma_i^2$, and $|X_i| \leq M$:
+
+$$P\left(\left|\sum_{i=1}^n X_i\right| \geq t\right) \leq 2\exp\left(-\frac{t^2/2}{\sigma^2 + Mt/3}\right)$$
+
+where $\sigma^2 = \sum_{i=1}^n \sigma_i^2$.
+
+**When to use**: Similar to Bennett's, interpolates between Gaussian and exponential regimes.
+
+### Azuma-Hoeffding Inequality (Martingale Concentration)
+
+Let $X_0, X_1, ..., X_n$ be a martingale with $|X_i - X_{i-1}| \leq c_i$ for all $i$.
+
+**Azuma's inequality**:
+
+$$P(X_n - X_0 \geq t) \leq \exp\left(-\frac{t^2}{2\sum_{i=1}^n c_i^2}\right)$$
+
+**When to use**: Martingales with bounded differences (e.g., Doob martingale, random walks).
+
+### McDiarmid's Inequality (Method of Bounded Differences)
+
+Let $f: \mathcal{X}^n \to \mathbb{R}$ satisfy the bounded difference condition:
+
+$$|f(x_1, ..., x_i, ..., x_n) - f(x_1, ..., x_i', ..., x_n)| \leq c_i$$
+
+for all $x_1, ..., x_n, x_i' \in \mathcal{X}$.
+
+If $X_1, ..., X_n$ are independent:
+
+$$P(f(X_1, ..., X_n) - E[f(X_1, ..., X_n)] \geq t) \leq \exp\left(-\frac{2t^2}{\sum_{i=1}^n c_i^2}\right)$$
+
+**When to use**: Functions of many independent variables where changing one variable has bounded effect.
+
+**Examples**: Longest increasing subsequence, chromatic number of random graph.
+
+### Mill's Inequality (Gaussian Tail Bounds)
+
+For $Z \sim \mathcal{N}(0, 1)$ and $x > 0$:
+
+$$\frac{1}{x\sqrt{2\pi}}e^{-x^2/2} \left(1 - \frac{1}{x^2}\right) < P(Z > x) < \frac{1}{x\sqrt{2\pi}}e^{-x^2/2}$$
+
+**Simple upper bound**:
+
+$$P(Z > x) \leq \frac{1}{2}e^{-x^2/2}$$
+
+**When to use**: Normal distribution tail probabilities.
+
+### Cantelli's Inequality (One-Sided Chebyshev)
+
+For random variable $X$ with mean $\mu$ and variance $\sigma^2$, for $t > 0$:
+
+$$P(X - \mu \geq t) \leq \frac{\sigma^2}{\sigma^2 + t^2}$$
+
+**When to use**: One-sided bound, tighter than two-sided Chebyshev.
+
+## Summary Table: Concentration Inequalities
+
+| Inequality | Conditions | Bound for $P(X - E[X] \geq t)$ | Decay Rate | Best Use Case |
+|------------|------------|--------------------------------|------------|---------------|
+| **Markov** | $X \geq 0$ | $\frac{E[X]}{t}$ | $O(1/t)$ | Only mean known |
+| **Chebyshev** | Finite variance | $\frac{\text{Var}(X)}{t^2}$ | $O(1/t^2)$ | Mean + variance known |
+| **Chernoff** | MGF exists | $\inf_s e^{-st}M_X(s)$ | Exponential | MGF available |
+| **Hoeffding** | Bounded, independent | $\exp\left(-\frac{2t^2}{n(b-a)^2}\right)$ | Exponential | Bounded variables |
+| **Bernstein** | Bounded, variance known | $\exp\left(-\frac{t^2/2}{\sigma^2 + Mt/3}\right)$ | Exponential | Small variance |
+| **Azuma** | Martingale, bounded diff | $\exp\left(-\frac{t^2}{2\sum c_i^2}\right)$ | Exponential | Martingales |
+| **McDiarmid** | Bounded differences | $\exp\left(-\frac{2t^2}{\sum c_i^2}\right)$ | Exponential | Functions of indep. vars |
+
+## Advanced Limit Theorems
+
+### Law of the Iterated Logarithm (LIL)
+
+For i.i.d. $X_1, X_2, ...$ with $E[X_i] = \mu$ and $\text{Var}(X_i) = \sigma^2$:
+
+$$\limsup_{n \to \infty} \frac{S_n - n\mu}{\sigma\sqrt{2n \ln \ln n}} = 1 \quad \text{a.s.}$$
+
+$$\liminf_{n \to \infty} \frac{S_n - n\mu}{\sigma\sqrt{2n \ln \ln n}} = -1 \quad \text{a.s.}$$
+
+**Interpretation**: The fluctuations of $S_n$ are of order $\sqrt{n \ln \ln n}$ (tighter than CLT's $\sqrt{n}$).
+
+### Glivenko-Cantelli Theorem
+
+Let $X_1, ..., X_n$ be i.i.d. with CDF $F$. Define the empirical CDF:
+
+$$F_n(x) = \frac{1}{n}\sum_{i=1}^n \mathbb{1}_{X_i \leq x}$$
+
+**Glivenko-Cantelli**: 
+
+$$\sup_x |F_n(x) - F(x)| \xrightarrow{a.s.} 0$$
+
+**Interpretation**: The empirical CDF converges uniformly to the true CDF.
+
+### Donsker's Theorem (Functional CLT)
+
+The empirical process:
+
+$$\sqrt{n}(F_n(x) - F(x))$$
+
+converges in distribution to a Brownian bridge.
+
+**Use**: Asymptotic distribution theory for goodness-of-fit tests (Kolmogorov-Smirnov).
+
+### Poisson Approximation to Binomial
+
+For $X \sim \text{Binomial}(n, p)$ with $np = \lambda$ fixed as $n \to \infty$, $p \to 0$:
+
+$$P(X = k) \to \frac{\lambda^k e^{-\lambda}}{k!}$$
+
+**When to use**: Large $n$, small $p$, moderate $np$.
+
+**Rule of thumb**: Use when $n \geq 20$ and $p \leq 0.05$.
+
+### Normal Approximation to Binomial
+
+For $X \sim \text{Binomial}(n, p)$:
+
+$$\frac{X - np}{\sqrt{np(1-p)}} \xrightarrow{d} \mathcal{N}(0, 1)$$
+
+**Continuity correction**: For better approximation:
+
+$$P(X \leq k) \approx \Phi\left(\frac{k + 0.5 - np}{\sqrt{np(1-p)}}\right)$$
+
+**Rule of thumb**: Use when $np \geq 5$ and $n(1-p) \geq 5$.
+
+### Normal Approximation to Poisson
+
+For $X \sim \text{Poisson}(\lambda)$ with large $\lambda$:
+
+$$\frac{X - \lambda}{\sqrt{\lambda}} \xrightarrow{d} \mathcal{N}(0, 1)$$
+
+**Rule of thumb**: Use when $\lambda \geq 10$.
+
+## Key Techniques and Tricks
+
+### Trick 1: Choosing the Right Inequality
+
+**Hierarchy** (loose to tight):
+1. Markov (only mean)
+2. Chebyshev (mean + variance)
+3. Chernoff/Hoeffding (exponential, for bounded variables)
+
+**When variance is small**: Use Bernstein over Hoeffding.
+
+### Trick 2: Optimizing Chernoff Bound
+
+To find the best Chernoff bound:
+1. Write $P(X \geq a) \leq e^{-ta}M_X(t)$
+2. Minimize over $t$: take derivative, set to 0
+3. Solve for optimal $t^*$
+4. Substitute back
+
+### Trick 3: Union Bound with Concentration
+
+For events $A_1, ..., A_n$:
+
+$$P\left(\bigcup_{i=1}^n A_i\right) \leq \sum_{i=1}^n P(A_i)$$
+
+**Combine with concentration**: Use Hoeffding/Chernoff for each $P(A_i)$.
+
+### Trick 4: Symmetrization
+
+Replace $X_i$ with $X_i - X_i'$ where $X_i'$ is independent copy to get zero-mean variables.
+
+### Trick 5: Truncation
+
+For unbounded variables, truncate at appropriate level, bound separately:
+
+$$E[X] = E[X \mathbb{1}_{|X| \leq M}] + E[X \mathbb{1}_{|X| > M}]$$
+
+### Trick 6: Moment Generating Function Composition
+
+For sum of independent RVs:
+
+$$M_{\sum X_i}(t) = \prod M_{X_i}(t)$$
+
+### Trick 7: Taylor Expansion for Bounds
+
+Use $e^x \leq 1 + x + x^2$ for $x \in [0, 1]$ to simplify Chernoff bounds.
+
+### Trick 8: Borel-Cantelli Lemmas
+
+**First Borel-Cantelli**: If $\sum_{n=1}^\infty P(A_n) < \infty$, then $P(A_n \text{ i.o.}) = 0$.
+
+**Second Borel-Cantelli**: If events are independent and $\sum_{n=1}^\infty P(A_n) = \infty$, then $P(A_n \text{ i.o.}) = 1$.
+
+**Use**: Proving almost sure convergence or divergence.
+
+### Trick 9: Skorohod Representation
+
+Convergence in distribution can be represented as almost sure convergence on a different probability space.
+
+### Trick 10: Cramér-Wold Device
+
+For multivariate convergence in distribution, it suffices to show all linear combinations converge:
+
+$$\mathbf{X}_n \xrightarrow{d} \mathbf{X} \iff \mathbf{a}^T\mathbf{X}_n \xrightarrow{d} \mathbf{a}^T\mathbf{X} \text{ for all } \mathbf{a}$$
+
+## Interview Problem Types
+
+### Type 1: Identifying Convergence Mode
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Sequence of random variables | Type of convergence | Check definitions; use hierarchy (a.s. $\Rightarrow$ in prob. $\Rightarrow$ in dist.) |
+
+### Type 2: Applying Law of Large Numbers
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| i.i.d. sequence with finite mean (and variance for WLLN) | Convergence of sample mean | Use $\bar{X}_n \xrightarrow{P} \mu$ (WLLN) or $\xrightarrow{a.s.}$ (SLLN) |
+
+### Type 3: Central Limit Theorem Applications
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Sum or mean of i.i.d. RVs, large $n$ | Approximate distribution or probability | Use $\frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} \approx \mathcal{N}(0,1)$ for large $n$ |
+
+### Type 4: Delta Method
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Asymptotic distribution of $\bar{X}_n$, smooth function $g$ | Asymptotic distribution of $g(\bar{X}_n)$ | Apply delta method: $\sqrt{n}(g(\bar{X}_n) - g(\mu)) \xrightarrow{d} \mathcal{N}(0, \sigma^2[g'(\mu)]^2)$ |
+
+### Type 5: Markov's Inequality
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Non-negative RV with known mean | Upper bound on tail probability | Use $P(X \geq a) \leq E[X]/a$ |
+
+### Type 6: Chebyshev's Inequality
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| RV with known mean and variance | Bound on $P(\|X - \mu\| \geq k)$ | Use $P(\|X - \mu\| \geq k) \leq \sigma^2/k^2$ |
+
+### Type 7: Chernoff/Hoeffding Bounds
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Sum of bounded independent RVs | Exponential tail bound | Apply Hoeffding: $P(\|S_n - E[S_n]\| \geq t) \leq 2\exp(-2t^2/[n(b-a)^2])$ |
+
+### Type 8: Approximating Distributions
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Binomial, Poisson, or other distribution; large parameters | Normal or Poisson approximation | Check conditions: CLT for normal, rare events for Poisson |
+
+### Type 9: Proving Convergence
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Sequence definition | Prove convergence in some mode | Use appropriate inequality/theorem; check definitions |
+
+### Type 10: Concentration in Specific Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Problem requiring tight probability bounds | Choose and apply concentration inequality | Select based on what's known: Markov → Chebyshev → Hoeffding/Chernoff |
+
+## Common Pitfalls
+
+### Pitfall 1: Confusing Convergence Types
+
+**Wrong**: Assuming convergence in distribution implies convergence in probability
+
+**Correct**: Only true when limiting to a constant
+
+### Pitfall 2: Misapplying CLT
+
+**Wrong**: Using CLT when $n$ is small or variance is infinite
+
+**Check**: Need $n$ large (typically $n \geq 30$) and finite variance
+
+### Pitfall 3: Forgetting Independence
+
+**Wrong**: Applying Hoeffding/Chernoff to dependent variables
+
+**Check**: Most concentration inequalities require independence
+
+### Pitfall 4: Wrong Chebyshev Application
+
+**Wrong**: Using two-sided Chebyshev for one-sided bound
+
+**Better**: Use Cantelli's inequality for one-sided bounds
+
+### Pitfall 5: Ignoring Continuity Correction
+
+**Wrong**: Using normal approximation to binomial without correction for small $n$
+
+**Check**: Add 0.5 for better discrete-to-continuous approximation
+
+### Pitfall 6: Loose Bounds
+
+**Wrong**: Using Markov when variance is known
+
+**Better**: Use Chebyshev (or stronger) when more information available
+
+### Pitfall 7: Incorrect Delta Method
+
+**Wrong**: Applying delta method when $g'(\mu) = 0$
+
+**Check**: Need $g'(\mu) \neq 0$; use second-order delta method otherwise
+
+## Quick Reference: Key Theorems
+
+**Weak Law of Large Numbers**:
+
+$$\bar{X}_n \xrightarrow{P} \mu$$
+
+**Strong Law of Large Numbers**:
+
+$$\bar{X}_n \xrightarrow{a.s.} \mu$$
+
+**Central Limit Theorem**:
+
+$$\frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} \xrightarrow{d} \mathcal{N}(0, 1)$$
+
+**Delta Method**:
+
+$$\sqrt{n}(g(\bar{X}_n) - g(\mu)) \xrightarrow{d} \mathcal{N}(0, \sigma^2[g'(\mu)]^2)$$
+
+**Markov's Inequality**:
+
+$$P(X \geq a) \leq \frac{E[X]}{a}$$
+
+**Chebyshev's Inequality**:
+
+$$P(|X - \mu| \geq k) \leq \frac{\sigma^2}{k^2}$$
+
+**Hoeffding's Inequality** (for $X_i \in [a,b]$):
+
+$$P(|\bar{X}_n - \mu| \geq t) \leq 2\exp\left(-\frac{2nt^2}{(b-a)^2}\right)$$
+
+**Chernoff Bound**:
+
+$$P(X \geq a) \leq \inf_{t>0} e^{-ta}M_X(t)$$
+
+## Practice Problem Categories
+
+- Proving convergence in probability vs. almost sure
+- Sample mean convergence rates
+- Normal approximation to binomial/Poisson
+- Delta method for variance, correlation, ratios
+- Slutsky's theorem applications
+- Continuous mapping theorem
+- Tail probability bounds
+- Concentration for sums
+- Union bounds with concentration
+- Martingale concentration
+- Empirical process convergence
+- Monte Carlo error bounds
+- Confidence intervals via CLT
+- Sample size calculations
+- Hypothesis testing via asymptotic normality
+- Bootstrap consistency
+- Method of moments consistency
+- Maximum likelihood asymptotics
+

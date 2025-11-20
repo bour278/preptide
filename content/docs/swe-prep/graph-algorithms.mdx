@@ -1,0 +1,393 @@
+---
+title: Graph Algorithms
+description: Comprehensive guide to Graph Theory, Traversals, Shortest Paths, MST, and Advanced Flow Algorithms
+---
+
+# Graph Algorithms
+
+## Fundamental Concepts
+
+### Representations
+1.  **Adjacency Matrix**: $V \times V$ matrix. $A[i][j] = w$ if edge exists. Space $O(V^2)$. Good for dense graphs.
+2.  **Adjacency List**: List of lists/maps. `adj[u] = [(v, w), ...]`. Space $O(V+E)$. Standard for interviews.
+3.  **Edge List**: List of `(u, v, w)` tuples. Used for Kruskal's/Bellman-Ford.
+
+### Types of Graphs
+-   **Directed vs Undirected**
+-   **Weighted vs Unweighted**
+-   **Cyclic vs Acyclic (DAG)**
+-   **Connected vs Disconnected**
+
+## Traversals
+
+### 1. Breadth-First Search (BFS)
+Explores layer by layer. Uses a **Queue**.
+**Use**: Shortest path in unweighted graphs, Level-order traversal, Connected components.
+**Complexity**: $O(V+E)$.
+
+```python
+from collections import deque
+
+def bfs(graph, start):
+    visited = set([start])
+    queue = deque([start])
+    
+    while queue:
+        node = queue.popleft()
+        # Process node
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+```
+
+### 2. Depth-First Search (DFS)
+Explores as deep as possible. Uses **Recursion (Stack)**.
+**Use**: Cycle detection, Topological Sort, path finding (maze), SCC.
+**Complexity**: $O(V+E)$.
+
+```python
+def dfs(graph, node, visited):
+    if node in visited:
+        return
+    visited.add(node)
+    # Process node
+    for neighbor in graph[node]:
+        dfs(graph, neighbor, visited)
+```
+
+## Shortest Path Algorithms
+
+### 1. Dijkstra's Algorithm
+Finds shortest paths from source to all nodes in **weighted graph with non-negative weights**.
+**Idea**: Greedy. Always expand the closest unvisited node.
+**Complexity**: $O(E \log V)$ using Min-Heap.
+
+```python
+import heapq
+
+def dijkstra(graph, start):
+    # graph = {u: {v: w, ...}}
+    min_heap = [(0, start)] # (distance, node)
+    distances = {node: float('inf') for node in graph}
+    distances[start] = 0
+    
+    while min_heap:
+        d, u = heapq.heappop(min_heap)
+        
+        if d > distances[u]: continue
+        
+        for v, weight in graph[u].items():
+            if distances[u] + weight < distances[v]:
+                distances[v] = distances[u] + weight
+                heapq.heappush(min_heap, (distances[v], v))
+                
+    return distances
+```
+
+### 2. Bellman-Ford Algorithm
+Handles **negative weights**. Detects negative cycles.
+**Idea**: Relax all $E$ edges $V-1$ times.
+**Complexity**: $O(VE)$.
+**Algorithm**:
+1.  Init distances to $\infty$, source to 0.
+2.  Loop $V-1$ times: For each edge $(u, v, w)$, if `dist[u] + w < dist[v]`, update `dist[v]`.
+3.  Loop one more time. If update possible, **Negative Cycle Exists**.
+
+### 3. Floyd-Warshall Algorithm
+**All-Pairs** Shortest Path.
+**Idea**: DP. `dp[k][i][j]` = shortest path from $i$ to $j$ using only nodes $1..k$ as intermediates.
+**Complexity**: $O(V^3)$.
+
+```python
+for k in range(V):
+    for i in range(V):
+        for j in range(V):
+            dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+```
+
+## Minimum Spanning Tree (MST)
+
+### 1. Kruskal's Algorithm
+**Idea**: Greedy. Sort edges by weight. Add edge if it doesn't form a cycle (Use Union-Find).
+**Complexity**: $O(E \log E)$.
+
+```python
+def kruskal(n, edges):
+    edges.sort(key=lambda x: x[2]) # (u, v, w)
+    uf = UnionFind(n)
+    mst_cost = 0
+    edges_count = 0
+    
+    for u, v, w in edges:
+        if uf.union(u, v):
+            mst_cost += w
+            edges_count += 1
+            if edges_count == n - 1: break
+            
+    return mst_cost
+```
+
+### 2. Prim's Algorithm
+**Idea**: Greedy. Like Dijkstra. Grow tree from a starting node by picking min weight edge connected to the tree.
+**Complexity**: $O(E \log V)$.
+
+## Advanced Algorithms
+
+### 1. Topological Sort (Kahn's Algorithm)
+Linear ordering of vertices in a **DAG** (Directed Acyclic Graph).
+**Idea**: Repeatedly remove nodes with **In-Degree = 0**.
+**Use**: Task scheduling, Build dependencies.
+
+```python
+def topo_sort(n, adj):
+    in_degree = [0] * n
+    for u in adj:
+        for v in adj[u]:
+            in_degree[v] += 1
+            
+    queue = deque([i for i in range(n) if in_degree[i] == 0])
+    res = []
+    
+    while queue:
+        u = queue.popleft()
+        res.append(u)
+        for v in adj[u]:
+            in_degree[v] -= 1
+            if in_degree[v] == 0:
+                queue.append(v)
+                
+    return res if len(res) == n else [] # Empty if cycle
+```
+
+### 2. Strongly Connected Components (SCC)
+Finds subgraphs where every node is reachable from every other node in a directed graph.
+
+#### Tarjan's Algorithm
+**Idea**: Single DFS pass. Uses discovery time and low-link values.
+**Key Concepts**:
+-   `discovery[u]`: Time at which u was first visited.
+-   `low[u]`: Lowest discovery time reachable from u (including via back-edges in DFS tree).
+-   Stack to keep track of current SCC nodes.
+-   If `low[u] == discovery[u]`, u is the root of an SCC. Pop stack until u.
+**Complexity**: $O(V+E)$.
+
+```python
+def tarjan_scc(graph):
+    n = len(graph)
+    discovery = [-1] * n
+    low = [-1] * n
+    stack = []
+    in_stack = [False] * n
+    time = [0]
+    sccs = []
+    
+    def dfs(u):
+        discovery[u] = low[u] = time[0]
+        time[0] += 1
+        stack.append(u)
+        in_stack[u] = True
+        
+        for v in graph[u]:
+            if discovery[v] == -1:
+                dfs(v)
+                low[u] = min(low[u], low[v])
+            elif in_stack[v]:
+                low[u] = min(low[u], discovery[v])
+        
+        if low[u] == discovery[u]:
+            scc = []
+            while True:
+                v = stack.pop()
+                in_stack[v] = False
+                scc.append(v)
+                if v == u:
+                    break
+            sccs.append(scc)
+    
+    for i in range(n):
+        if discovery[i] == -1:
+            dfs(i)
+    
+    return sccs
+```
+
+#### Kosaraju's Algorithm
+**Idea**: Two DFS passes. First on original graph, second on transpose graph.
+**Algorithm**:
+1.  Perform DFS on $G$, compute finish times.
+2.  Compute transpose graph $G^T$ (reverse all edges).
+3.  Perform DFS on $G^T$ in decreasing order of finish times.
+4.  Each DFS tree is an SCC.
+**Complexity**: $O(V+E)$.
+
+```python
+def kosaraju_scc(graph):
+    n = len(graph)
+    visited = [False] * n
+    finish_order = []
+    
+    # Step 1: DFS on original graph to get finish times
+    def dfs1(u):
+        visited[u] = True
+        for v in graph[u]:
+            if not visited[v]:
+                dfs1(v)
+        finish_order.append(u)
+    
+    for i in range(n):
+        if not visited[i]:
+            dfs1(i)
+    
+    # Step 2: Build transpose graph
+    graph_t = [[] for _ in range(n)]
+    for u in range(n):
+        for v in graph[u]:
+            graph_t[v].append(u)
+    
+    # Step 3: DFS on transpose in reverse finish order
+    visited = [False] * n
+    sccs = []
+    
+    def dfs2(u, scc):
+        visited[u] = True
+        scc.append(u)
+        for v in graph_t[u]:
+            if not visited[v]:
+                dfs2(v, scc)
+    
+    for u in reversed(finish_order):
+        if not visited[u]:
+            scc = []
+            dfs2(u, scc)
+            sccs.append(scc)
+    
+    return sccs
+```
+
+### 3. Network Flow (Edmonds-Karp)
+Max Flow problem. Implementation of Ford-Fulkerson using BFS.
+**Idea**: Find augmenting path in residual graph using BFS. Add min bottle-neck capacity to flow. Update residual graph. Repeat.
+**Complexity**: $O(V E^2)$.
+
+### 4. Union-Find (Disjoint Set Union)
+Crucial data structure for Graph problems (Kruskal, Connected Components).
+**Optimizations**:
+1.  **Path Compression**: Point nodes directly to root during `find`.
+2.  **Union by Rank/Size**: Attach smaller tree to larger tree.
+**Complexity**: $O(\alpha(N)) \approx O(1)$.
+
+```python
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [1] * n
+        
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x]) # Path compression
+        return self.parent[x]
+        
+    def union(self, x, y):
+        rootX, rootY = self.find(x), self.find(y)
+        if rootX != rootY:
+            # Union by rank
+            if self.rank[rootX] > self.rank[rootY]:
+                self.parent[rootY] = rootX
+            elif self.rank[rootX] < self.rank[rootY]:
+                self.parent[rootX] = rootY
+            else:
+                self.parent[rootY] = rootX
+                self.rank[rootX] += 1
+            return True
+        return False
+```
+
+## Important Tricks
+
+### Trick 1: Multi-Source BFS
+**Problem**: Find min distance to any "monster" or "rotten orange" on a grid.
+**Technique**: Initialize Queue with **all** sources at distance 0 simultaneously. Run standard BFS.
+
+### Trick 2: 0-1 BFS
+**Problem**: Shortest path where edge weights are 0 or 1.
+**Technique**: Use Deque. If weight 0, `pushleft` (process immediately). If weight 1, `append`.
+**Complexity**: $O(V+E)$, faster than Dijkstra.
+
+### Trick 3: Eulerian Path (Hierholzer’s Algorithm)
+**Definition**: Path visiting every edge exactly once.
+**Condition**:
+-   Undirected: 0 or 2 nodes with odd degree.
+-   Directed: At most 1 node `out - in = 1` (Start), 1 node `in - out = 1` (End), others equal.
+**Algorithm**: DFS. Add node to path **after** visiting neighbors (Post-order-ish). Reverse result.
+
+### Trick 4: Bipartite Check
+**Technique**: 2-Coloring using BFS/DFS. If neighbor has same color, not bipartite.
+
+## Interview Problem Types
+
+### Type 1: Grid Search (Islands/Mazes)
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Grid of '1's (land) and '0's (water) | Number of islands | Iterate cells. If '1', increment count and run DFS/BFS to sink connected '1's to '0'. |
+| Grid with start/end | Shortest path | BFS. Track distance. |
+
+### Type 2: Dependency Resolution
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Course prerequisites (u -> v) | Can finish all? Order? | Cycle detection (DFS with recursion stack state) or Topological Sort. |
+
+### Type 3: Connected Components
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Social network (edges) | Size of friend groups | Union-Find or DFS/BFS counting. |
+| Direct flights | Can reach all cities? | Connectivity check (DFS/BFS) or Union-Find. |
+
+### Type 4: Shortest Path Variations
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Weighted graph (pos) | Min cost | Dijkstra. |
+| Weighted graph (pos/neg) | Min cost | Bellman-Ford. |
+| $k$ stops allowed | Min cost | BFS (level-order) or Bellman-Ford with $k$ iterations (Cheapest Flights Within K Stops). |
+
+## Common Pitfalls
+
+### Pitfall 1: Dijkstra with Negative Weights
+**Wrong**: Using Dijkstra when negative edges exist.
+**Correct**: Use Bellman-Ford. Dijkstra assumes once a node is popped, its distance is final. Negative edges invalidate this.
+
+### Pitfall 2: DFS for Shortest Path
+**Wrong**: Using DFS to find shortest path in unweighted graph.
+**Correct**: DFS finds *a* path, not necessarily shortest. Use BFS.
+
+### Pitfall 3: Cycle Detection in Directed vs Undirected
+**Wrong**: Using `visited` set alone for directed graphs.
+**Correct**:
+-   **Undirected**: `visited` + check `parent`.
+-   **Directed**: `visited` + `recursion_stack` (nodes currently in current DFS path).
+
+### Pitfall 4: Modifying Graph During Iteration
+**Wrong**: Changing the structure while iterating (e.g., removing edges).
+**Correct**: Collect changes and apply after, or use careful indexing.
+
+## Quick Reference
+
+-   **BFS**: Queue. Shortest path unweighted. $O(V+E)$.
+-   **DFS**: Stack/Recursion. Connectivity, Cycles. $O(V+E)$.
+-   **Dijkstra**: Min-Heap. Shortest path weighted (pos). $O(E \log V)$.
+-   **Bellman-Ford**: Shortest path (neg). $O(VE)$.
+-   **Floyd-Warshall**: All-pairs. $O(V^3)$.
+-   **Kruskal**: MST. Union-Find. $O(E \log E)$.
+-   **Prim**: MST. Heap. $O(E \log V)$.
+-   **Topo Sort**: In-degree 0 queue. DAGs only.
+-   **Union-Find**: Path compression + Rank. $O(1)$ amortized.
+
+## Practice Problem Categories
+
+-   **Islands**: Number of Islands, Max Area of Island.
+-   **Traversals**: Clone Graph, Word Ladder (BFS).
+-   **Topo Sort**: Course Schedule I/II, Alien Dictionary.
+-   **Union-Find**: Number of Connected Components, Redundant Connection.
+-   **Shortest Path**: Network Delay Time, Cheapest Flights Within K Stops.
+-   **Matrix**: Rotting Oranges, 01 Matrix.
+-   **Hard**: Critical Connections (Bridges), Reconstruct Itinerary (Eulerian).

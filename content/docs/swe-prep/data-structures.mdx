@@ -1,0 +1,1063 @@
+---
+title: Data Structures
+description: Comprehensive guide to essential Data Structures including Heaps, Tries, Balanced Trees, and Hash Maps
+---
+
+# Data Structures
+
+## Fundamental Concepts
+
+### 1. Stack (LIFO)
+**Definition**: Last-In, First-Out. Elements are added and removed from the same end (top).
+**Operations**:
+-   `push(x)`: Add element to top. $O(1)$.
+-   `pop()`: Remove top element. $O(1)$.
+-   `peek()`: View top element. $O(1)$.
+
+```python
+class Stack:
+    def __init__(self):
+        self.items = []
+    
+    def push(self, x):
+        self.items.append(x)
+    
+    def pop(self):
+        if self.is_empty():
+            raise IndexError("Stack is empty")
+        return self.items.pop()
+    
+    def peek(self):
+        if self.is_empty():
+            raise IndexError("Stack is empty")
+        return self.items[-1]
+    
+    def is_empty(self):
+        return len(self.items) == 0
+    
+    def size(self):
+        return len(self.items)
+```
+
+### 2. Queue (FIFO)
+**Definition**: First-In, First-Out. Elements added at rear, removed from front.
+**Operations**:
+-   `enqueue(x)`: Add to rear. $O(1)$.
+-   `dequeue()`: Remove from front. $O(1)$.
+
+```python
+class Queue:
+    def __init__(self):
+        self.items = []
+    
+    def enqueue(self, x):
+        self.items.append(x)
+    
+    def dequeue(self):
+        if self.is_empty():
+            raise IndexError("Queue is empty")
+        return self.items.pop(0)
+    
+    def is_empty(self):
+        return len(self.items) == 0
+    
+    def size(self):
+        return len(self.items)
+
+# Better: Use deque for O(1) dequeue
+from collections import deque
+class QueueDeque:
+    def __init__(self):
+        self.items = deque()
+    
+    def enqueue(self, x):
+        self.items.append(x)
+    
+    def dequeue(self):
+        if self.is_empty():
+            raise IndexError("Queue is empty")
+        return self.items.popleft()
+    
+    def is_empty(self):
+        return len(self.items) == 0
+```
+
+### 3. Priority Queue
+**Definition**: Abstract data type where each element has a priority. Elements with higher priority are served before lower priority.
+**Implementation**: Typically using a Heap.
+**Complexity**: Insert $O(\log n)$, Extract-Min/Max $O(\log n)$.
+
+```python
+import heapq
+
+class PriorityQueue:
+    def __init__(self):
+        self.heap = []
+        self.count = 0  # For tie-breaking
+    
+    def push(self, item, priority):
+        heapq.heappush(self.heap, (priority, self.count, item))
+        self.count += 1
+    
+    def pop(self):
+        if self.is_empty():
+            raise IndexError("Priority queue is empty")
+        return heapq.heappop(self.heap)[2]
+    
+    def is_empty(self):
+        return len(self.heap) == 0
+```
+
+### 4. Deque (Double-Ended Queue)
+**Definition**: Queue where elements can be added/removed from both front and rear.
+**Operations**: `appendLeft`, `append`, `popLeft`, `pop`. All $O(1)$.
+
+```python
+from collections import deque
+
+class Deque:
+    def __init__(self):
+        self.items = deque()
+    
+    def append_left(self, x):
+        self.items.appendleft(x)
+    
+    def append_right(self, x):
+        self.items.append(x)
+    
+    def pop_left(self):
+        if self.is_empty():
+            raise IndexError("Deque is empty")
+        return self.items.popleft()
+    
+    def pop_right(self):
+        if self.is_empty():
+            raise IndexError("Deque is empty")
+        return self.items.pop()
+    
+    def is_empty(self):
+        return len(self.items) == 0
+```
+
+### 5. Heap
+**Definition**: A complete binary tree satisfying the heap property.
+-   **Min-Heap**: Parent $\le$ Children. Root is minimum.
+-   **Max-Heap**: Parent $\ge$ Children. Root is maximum.
+**Array Representation**: Node $i$ has children $2i+1, 2i+2$ and parent $\lfloor (i-1)/2 \rfloor$.
+**Operations**:
+-   `push`: Add to end, bubble up. $O(\log n)$.
+-   `pop`: Swap root with last, remove last, bubble down. $O(\log n)$.
+-   `heapify`: Build heap from array. $O(n)$.
+
+```python
+class MinHeap:
+    def __init__(self):
+        self.heap = []
+    
+    def parent(self, i):
+        return (i - 1) // 2
+    
+    def left_child(self, i):
+        return 2 * i + 1
+    
+    def right_child(self, i):
+        return 2 * i + 2
+    
+    def swap(self, i, j):
+        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+    
+    def push(self, val):
+        self.heap.append(val)
+        self._bubble_up(len(self.heap) - 1)
+    
+    def _bubble_up(self, i):
+        while i > 0 and self.heap[i] < self.heap[self.parent(i)]:
+            self.swap(i, self.parent(i))
+            i = self.parent(i)
+    
+    def pop(self):
+        if len(self.heap) == 0:
+            raise IndexError("Heap is empty")
+        if len(self.heap) == 1:
+            return self.heap.pop()
+        
+        root = self.heap[0]
+        self.heap[0] = self.heap.pop()
+        self._bubble_down(0)
+        return root
+    
+    def _bubble_down(self, i):
+        while True:
+            smallest = i
+            left = self.left_child(i)
+            right = self.right_child(i)
+            
+            if left < len(self.heap) and self.heap[left] < self.heap[smallest]:
+                smallest = left
+            if right < len(self.heap) and self.heap[right] < self.heap[smallest]:
+                smallest = right
+            
+            if smallest == i:
+                break
+            self.swap(i, smallest)
+            i = smallest
+    
+    def peek(self):
+        if len(self.heap) == 0:
+            raise IndexError("Heap is empty")
+        return self.heap[0]
+    
+    def heapify(self, arr):
+        self.heap = arr[:]
+        for i in range(len(self.heap) // 2 - 1, -1, -1):
+            self._bubble_down(i)
+```
+
+### 6. Fibonacci Heap
+**Definition**: A collection of trees satisfying the minimum-heap property. More complex than binary heap but faster amortized operations.
+**Amortized Complexity**:
+-   `insert`: $O(1)$
+-   `find-min`: $O(1)$
+-   `union`: $O(1)$
+-   `decrease-key`: $O(1)$
+-   `extract-min`: $O(\log n)$
+**Structure**: Trees are rooted but unordered. Uses a circular doubly linked list for roots. Lazy consolidation during `extract-min`.
+
+```python
+class FibonacciNode:
+    def __init__(self, key):
+        self.key = key
+        self.parent = None
+        self.child = None
+        self.left = self
+        self.right = self
+        self.degree = 0
+        self.marked = False
+
+class FibonacciHeap:
+    def __init__(self):
+        self.min_node = None
+        self.n = 0
+    
+    def insert(self, key):
+        node = FibonacciNode(key)
+        if self.min_node is None:
+            self.min_node = node
+        else:
+            self._add_to_root_list(node)
+            if key < self.min_node.key:
+                self.min_node = node
+        self.n += 1
+        return node
+    
+    def _add_to_root_list(self, node):
+        if self.min_node is None:
+            self.min_node = node
+        else:
+            node.right = self.min_node.right
+            node.left = self.min_node
+            self.min_node.right.left = node
+            self.min_node.right = node
+    
+    def find_min(self):
+        return self.min_node.key if self.min_node else None
+    
+    def extract_min(self):
+        z = self.min_node
+        if z is None:
+            return None
+        
+        # Add children to root list
+        if z.child is not None:
+            child = z.child
+            while True:
+                next_child = child.right
+                self._add_to_root_list(child)
+                child.parent = None
+                if next_child == z.child:
+                    break
+                child = next_child
+        
+        # Remove z from root list
+        if z == z.right:
+            self.min_node = None
+        else:
+            z.left.right = z.right
+            z.right.left = z.left
+            self.min_node = z.right
+            self._consolidate()
+        
+        self.n -= 1
+        return z.key
+    
+    def _consolidate(self):
+        # Simplified consolidation
+        A = [None] * (self.n + 1)
+        nodes = []
+        w = self.min_node
+        if w is None:
+            return
+        
+        # Collect all root nodes
+        current = w
+        while True:
+            nodes.append(current)
+            current = current.right
+            if current == w:
+                break
+        
+        for w in nodes:
+            x = w
+            d = x.degree
+            while A[d] is not None:
+                y = A[d]
+                if x.key > y.key:
+                    x, y = y, x
+                self._heap_link(y, x)
+                A[d] = None
+                d += 1
+            A[d] = x
+        
+        # Find new min
+        self.min_node = None
+        for node in nodes:
+            if node.parent is None:
+                if self.min_node is None or node.key < self.min_node.key:
+                    self.min_node = node
+    
+    def _heap_link(self, y, x):
+        # Remove y from root list
+        y.left.right = y.right
+        y.right.left = y.left
+        
+        # Make y a child of x
+        y.parent = x
+        if x.child is None:
+            x.child = y
+            y.left = y
+            y.right = y
+        else:
+            y.right = x.child.right
+            y.left = x.child
+            x.child.right.left = y
+            x.child.right = y
+        
+        x.degree += 1
+        y.marked = False
+```
+
+### 7. Linked List
+**Definition**: Linear collection of nodes where each node points to the next.
+**Properties**: Discontiguous memory.
+**Complexity**: Access $O(n)$, Insert/Delete $O(1)$ (if pointer known).
+
+```python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+        self.size = 0
+    
+    def append(self, val):
+        new_node = ListNode(val)
+        if self.head is None:
+            self.head = new_node
+        else:
+            current = self.head
+            while current.next:
+                current = current.next
+            current.next = new_node
+        self.size += 1
+    
+    def prepend(self, val):
+        new_node = ListNode(val)
+        new_node.next = self.head
+        self.head = new_node
+        self.size += 1
+    
+    def delete(self, val):
+        if self.head is None:
+            return
+        
+        if self.head.val == val:
+            self.head = self.head.next
+            self.size -= 1
+            return
+        
+        current = self.head
+        while current.next:
+            if current.next.val == val:
+                current.next = current.next.next
+                self.size -= 1
+                return
+            current = current.next
+    
+    def find(self, val):
+        current = self.head
+        while current:
+            if current.val == val:
+                return current
+            current = current.next
+        return None
+    
+    def to_list(self):
+        result = []
+        current = self.head
+        while current:
+            result.append(current.val)
+            current = current.next
+        return result
+```
+
+### 8. Doubly Linked List
+**Definition**: Nodes have `next` and `prev` pointers.
+**Pros**: Can traverse backwards. $O(1)$ deletion given a node (update prev and next).
+**Cons**: 2x pointer overhead.
+
+```python
+class DoublyListNode:
+    def __init__(self, val=0, prev=None, next=None):
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class DoublyLinkedList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.size = 0
+    
+    def append(self, val):
+        new_node = DoublyListNode(val)
+        if self.head is None:
+            self.head = self.tail = new_node
+        else:
+            new_node.prev = self.tail
+            self.tail.next = new_node
+            self.tail = new_node
+        self.size += 1
+    
+    def prepend(self, val):
+        new_node = DoublyListNode(val)
+        if self.head is None:
+            self.head = self.tail = new_node
+        else:
+            new_node.next = self.head
+            self.head.prev = new_node
+            self.head = new_node
+        self.size += 1
+    
+    def delete_node(self, node):
+        if node.prev:
+            node.prev.next = node.next
+        else:
+            self.head = node.next
+        
+        if node.next:
+            node.next.prev = node.prev
+        else:
+            self.tail = node.prev
+        
+        self.size -= 1
+    
+    def delete_val(self, val):
+        current = self.head
+        while current:
+            if current.val == val:
+                self.delete_node(current)
+                return
+            current = current.next
+```
+
+### 9. Circular Linked List
+**Definition**: Last node points back to the first node.
+**Use Cases**: Round-robin scheduling, implementation of Fibonacci Heap.
+
+```python
+class CircularLinkedList:
+    def __init__(self):
+        self.head = None
+        self.size = 0
+    
+    def append(self, val):
+        new_node = ListNode(val)
+        if self.head is None:
+            self.head = new_node
+            new_node.next = new_node
+        else:
+            current = self.head
+            while current.next != self.head:
+                current = current.next
+            current.next = new_node
+            new_node.next = self.head
+        self.size += 1
+    
+    def delete(self, val):
+        if self.head is None:
+            return
+        
+        if self.head.val == val:
+            if self.head.next == self.head:
+                self.head = None
+            else:
+                current = self.head
+                while current.next != self.head:
+                    current = current.next
+                current.next = self.head.next
+                self.head = self.head.next
+            self.size -= 1
+            return
+        
+        current = self.head
+        while current.next != self.head:
+            if current.next.val == val:
+                current.next = current.next.next
+                self.size -= 1
+                return
+            current = current.next
+```
+
+### 10. Hash Map
+**Definition**: Maps keys to values.
+**Mechanism**: $index = \text{hash}(key) \pmod N$.
+**Collision Resolution**:
+-   **Chaining**: Bucket stores a linked list.
+-   **Open Addressing**: Probe sequences (Linear: $i+1, i+2...$).
+**Complexity**: Average $O(1)$ operations. Worst case $O(n)$ (all keys collide).
+**Load Factor**: $\alpha = n/N$. Resizing occurs when $\alpha > 0.75$.
+
+```python
+class HashMap:
+    def __init__(self, capacity=16, load_factor=0.75):
+        self.capacity = capacity
+        self.load_factor = load_factor
+        self.size = 0
+        self.buckets = [[] for _ in range(capacity)]
+    
+    def _hash(self, key):
+        return hash(key) % self.capacity
+    
+    def _resize(self):
+        old_buckets = self.buckets
+        self.capacity *= 2
+        self.buckets = [[] for _ in range(self.capacity)]
+        self.size = 0
+        
+        for bucket in old_buckets:
+            for key, value in bucket:
+                self.put(key, value)
+    
+    def put(self, key, value):
+        if self.size >= self.capacity * self.load_factor:
+            self._resize()
+        
+        index = self._hash(key)
+        bucket = self.buckets[index]
+        
+        for i, (k, v) in enumerate(bucket):
+            if k == key:
+                bucket[i] = (key, value)
+                return
+        
+        bucket.append((key, value))
+        self.size += 1
+    
+    def get(self, key):
+        index = self._hash(key)
+        bucket = self.buckets[index]
+        
+        for k, v in bucket:
+            if k == key:
+                return v
+        raise KeyError(f"Key {key} not found")
+    
+    def remove(self, key):
+        index = self._hash(key)
+        bucket = self.buckets[index]
+        
+        for i, (k, v) in enumerate(bucket):
+            if k == key:
+                bucket.pop(i)
+                self.size -= 1
+                return
+        raise KeyError(f"Key {key} not found")
+    
+    def contains(self, key):
+        index = self._hash(key)
+        bucket = self.buckets[index]
+        return any(k == key for k, v in bucket)
+```
+
+### 11. Tree
+**Definition**: A hierarchical structure with a root value and subtrees of children with a parent node.
+-   **Height**: Max depth from root to leaf.
+-   **Depth**: Edges from root to node.
+-   **Traversal**: DFS (Pre/In/Post order), BFS (Level order).
+
+```python
+class TreeNode:
+    def __init__(self, val=0, children=None):
+        self.val = val
+        self.children = children if children is not None else []
+
+class Tree:
+    def __init__(self, root=None):
+        self.root = root
+    
+    def preorder(self, node=None):
+        if node is None:
+            node = self.root
+        if node is None:
+            return []
+        
+        result = [node.val]
+        for child in node.children:
+            result.extend(self.preorder(child))
+        return result
+    
+    def postorder(self, node=None):
+        if node is None:
+            node = self.root
+        if node is None:
+            return []
+        
+        result = []
+        for child in node.children:
+            result.extend(self.postorder(child))
+        result.append(node.val)
+        return result
+    
+    def bfs(self):
+        if self.root is None:
+            return []
+        
+        from collections import deque
+        queue = deque([self.root])
+        result = []
+        
+        while queue:
+            node = queue.popleft()
+            result.append(node.val)
+            queue.extend(node.children)
+        
+        return result
+    
+    def height(self, node=None):
+        if node is None:
+            node = self.root
+        if node is None:
+            return -1
+        
+        if not node.children:
+            return 0
+        
+        return 1 + max(self.height(child) for child in node.children)
+```
+
+### 12. Trie (Prefix Tree)
+**Definition**: Tree for storing strings. Each node represents a character.
+**Complexity**: Insert/Search $O(L)$ where $L$ is word length.
+**Structure**: `root` is empty. Path from root to node represents prefix.
+
+```python
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_end = False
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+    
+    def insert(self, word):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.is_end = True
+    
+    def search(self, word):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                return False
+            node = node.children[char]
+        return node.is_end
+    
+    def starts_with(self, prefix):
+        node = self.root
+        for char in prefix:
+            if char not in node.children:
+                return False
+            node = node.children[char]
+        return True
+    
+    def delete(self, word):
+        def _delete(node, word, index):
+            if index == len(word):
+                if not node.is_end:
+                    return False
+                node.is_end = False
+                return len(node.children) == 0
+            
+            char = word[index]
+            if char not in node.children:
+                return False
+            
+            should_delete = _delete(node.children[char], word, index + 1)
+            
+            if should_delete:
+                del node.children[char]
+                return len(node.children) == 0 and not node.is_end
+            
+            return False
+        
+        _delete(self.root, word, 0)
+```
+
+### 13. Binary Search Tree (BST)
+**Definition**: Binary tree where for every node, `left.val < node.val < right.val`.
+**Operations**: Search, Insert, Delete.
+**Complexity**: $O(h)$ where $h$ is height.
+-   Balanced: $h = \log n$.
+-   Skewed: $h = n$.
+
+```python
+class BSTNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+class BST:
+    def __init__(self):
+        self.root = None
+    
+    def insert(self, val):
+        self.root = self._insert(self.root, val)
+    
+    def _insert(self, node, val):
+        if node is None:
+            return BSTNode(val)
+        
+        if val < node.val:
+            node.left = self._insert(node.left, val)
+        elif val > node.val:
+            node.right = self._insert(node.right, val)
+        
+        return node
+    
+    def search(self, val):
+        return self._search(self.root, val)
+    
+    def _search(self, node, val):
+        if node is None or node.val == val:
+            return node
+        
+        if val < node.val:
+            return self._search(node.left, val)
+        return self._search(node.right, val)
+    
+    def delete(self, val):
+        self.root = self._delete(self.root, val)
+    
+    def _delete(self, node, val):
+        if node is None:
+            return None
+        
+        if val < node.val:
+            node.left = self._delete(node.left, val)
+        elif val > node.val:
+            node.right = self._delete(node.right, val)
+        else:
+            if node.left is None:
+                return node.right
+            if node.right is None:
+                return node.left
+            
+            min_node = self._min_value_node(node.right)
+            node.val = min_node.val
+            node.right = self._delete(node.right, min_node.val)
+        
+        return node
+    
+    def _min_value_node(self, node):
+        while node.left:
+            node = node.left
+        return node
+    
+    def inorder(self):
+        result = []
+        self._inorder(self.root, result)
+        return result
+    
+    def _inorder(self, node, result):
+        if node:
+            self._inorder(node.left, result)
+            result.append(node.val)
+            self._inorder(node.right, result)
+```
+
+### 14. AVL Tree
+**Definition**: Self-balancing BST. Difference in heights of left and right subtrees is at most 1 for all nodes.
+**Rotations**:
+-   **LL**: Right rotation.
+-   **RR**: Left rotation.
+-   **LR**: Left then Right.
+-   **RL**: Right then Left.
+**Complexity**: Guaranteed $O(\log n)$ for all operations.
+
+```python
+class AVLNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+        self.height = 1
+
+class AVLTree:
+    def __init__(self):
+        self.root = None
+    
+    def height(self, node):
+        if node is None:
+            return 0
+        return node.height
+    
+    def balance_factor(self, node):
+        if node is None:
+            return 0
+        return self.height(node.left) - self.height(node.right)
+    
+    def right_rotate(self, y):
+        x = y.left
+        T2 = x.right
+        
+        x.right = y
+        y.left = T2
+        
+        y.height = 1 + max(self.height(y.left), self.height(y.right))
+        x.height = 1 + max(self.height(x.left), self.height(x.right))
+        
+        return x
+    
+    def left_rotate(self, x):
+        y = x.right
+        T2 = y.left
+        
+        y.left = x
+        x.right = T2
+        
+        x.height = 1 + max(self.height(x.left), self.height(x.right))
+        y.height = 1 + max(self.height(y.left), self.height(y.right))
+        
+        return y
+    
+    def insert(self, val):
+        self.root = self._insert(self.root, val)
+    
+    def _insert(self, node, val):
+        if node is None:
+            return AVLNode(val)
+        
+        if val < node.val:
+            node.left = self._insert(node.left, val)
+        elif val > node.val:
+            node.right = self._insert(node.right, val)
+        else:
+            return node
+        
+        node.height = 1 + max(self.height(node.left), self.height(node.right))
+        balance = self.balance_factor(node)
+        
+        # Left Left
+        if balance > 1 and val < node.left.val:
+            return self.right_rotate(node)
+        
+        # Right Right
+        if balance < -1 and val > node.right.val:
+            return self.left_rotate(node)
+        
+        # Left Right
+        if balance > 1 and val > node.left.val:
+            node.left = self.left_rotate(node.left)
+            return self.right_rotate(node)
+        
+        # Right Left
+        if balance < -1 and val < node.right.val:
+            node.right = self.right_rotate(node.right)
+            return self.left_rotate(node)
+        
+        return node
+```
+
+### 15. Red-Black Tree
+**Definition**: Self-balancing BST with color bits (Red/Black) satisfying properties:
+1.  Root is Black.
+2.  Leaves (NIL) are Black.
+3.  Red node children must be Black (No double Red).
+4.  Every path from node to descendant leaves has same number of Black nodes.
+**Complexity**: Guaranteed $O(\log n)$. Used in C++ `std::map`, Java `TreeMap`.
+
+```python
+class RBNode:
+    RED = True
+    BLACK = False
+    
+    def __init__(self, val, color=RED):
+        self.val = val
+        self.color = color
+        self.left = None
+        self.right = None
+        self.parent = None
+
+class RedBlackTree:
+    def __init__(self):
+        self.NIL = RBNode(0, RBNode.BLACK)
+        self.root = self.NIL
+    
+    def insert(self, val):
+        node = RBNode(val)
+        node.left = self.NIL
+        node.right = self.NIL
+        
+        y = None
+        x = self.root
+        
+        while x != self.NIL:
+            y = x
+            if node.val < x.val:
+                x = x.left
+            else:
+                x = x.right
+        
+        node.parent = y
+        if y is None:
+            self.root = node
+        elif node.val < y.val:
+            y.left = node
+        else:
+            y.right = node
+        
+        if node.parent is None:
+            node.color = RBNode.BLACK
+            return
+        
+        if node.parent.parent is None:
+            return
+        
+        self._fix_insert(node)
+    
+    def _fix_insert(self, k):
+        while k.parent.color == RBNode.RED:
+            if k.parent == k.parent.parent.right:
+                u = k.parent.parent.left
+                if u.color == RBNode.RED:
+                    u.color = RBNode.BLACK
+                    k.parent.color = RBNode.BLACK
+                    k.parent.parent.color = RBNode.RED
+                    k = k.parent.parent
+                else:
+                    if k == k.parent.left:
+                        k = k.parent
+                        self._right_rotate(k)
+                    k.parent.color = RBNode.BLACK
+                    k.parent.parent.color = RBNode.RED
+                    self._left_rotate(k.parent.parent)
+            else:
+                u = k.parent.parent.right
+                if u.color == RBNode.RED:
+                    u.color = RBNode.BLACK
+                    k.parent.color = RBNode.BLACK
+                    k.parent.parent.color = RBNode.RED
+                    k = k.parent.parent
+                else:
+                    if k == k.parent.right:
+                        k = k.parent
+                        self._left_rotate(k)
+                    k.parent.color = RBNode.BLACK
+                    k.parent.parent.color = RBNode.RED
+                    self._right_rotate(k.parent.parent)
+            if k == self.root:
+                break
+        self.root.color = RBNode.BLACK
+    
+    def _left_rotate(self, x):
+        y = x.right
+        x.right = y.left
+        if y.left != self.NIL:
+            y.left.parent = x
+        
+        y.parent = x.parent
+        if x.parent is None:
+            self.root = y
+        elif x == x.parent.left:
+            x.parent.left = y
+        else:
+            x.parent.right = y
+        
+        y.left = x
+        x.parent = y
+    
+    def _right_rotate(self, x):
+        y = x.left
+        x.left = y.right
+        if y.right != self.NIL:
+            y.right.parent = x
+        
+        y.parent = x.parent
+        if x.parent is None:
+            self.root = y
+        elif x == x.parent.right:
+            x.parent.right = y
+        else:
+            x.parent.left = y
+        
+        y.right = x
+        x.parent = y
+```
+
+## Quick Reference
+
+| Structure | Access | Search | Insert | Delete | Space |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Array** | $O(1)$ | $O(n)$ | $O(n)$ | $O(n)$ | $O(n)$ |
+| **Stack/Queue** | - | $O(n)$ | $O(1)$ | $O(1)$ | $O(n)$ |
+| **Linked List** | $O(n)$ | $O(n)$ | $O(1)^*$ | $O(1)^*$ | $O(n)$ |
+| **Hash Map** | - | $O(1)$ | $O(1)$ | $O(1)$ | $O(n)$ |
+| **BST** | - | $O(h)$ | $O(h)$ | $O(h)$ | $O(n)$ |
+| **AVL/RB Tree** | - | $O(\log n)$ | $O(\log n)$ | $O(\log n)$ | $O(n)$ |
+| **Heap** | $O(1)$ (min) | $O(n)$ | $O(\log n)$ | $O(\log n)$ | $O(n)$ |
+
+*\* Given pointer to node/position.*
+
+## Common Pitfalls
+
+### Pitfall 1: Hash Map Key Mutability
+**Wrong**: Using a `list` as a dict key.
+**Correct**: Keys must be hashable (immutable). Use `tuple`.
+
+### Pitfall 2: BST Degeneracy
+**Wrong**: Assuming BST is always $O(\log n)$.
+**Correct**: Worst case is $O(n)$ (linked list). Use AVL/Red-Black for guarantees.
+
+### Pitfall 3: Priority Queue Direction
+**Wrong**: Assuming standard library Heap is Max-Heap.
+**Correct**: Python `heapq` is Min-Heap. Use negative values for Max-Heap.
+
+### Pitfall 4: Deque from List
+**Wrong**: Using `list.pop(0)` for queue. This is $O(n)$.
+**Correct**: Use `collections.deque`.
+
+## Practice Problem Categories
+
+-   **Heap**: Merge K Sorted Lists, Median from Data Stream.
+-   **Hash Map**: LRU Cache, Subarray Sum equals K.
+-   **Trie**: Word Search II, Design Add/Search Words.
+-   **BST**: Validate BST, Kth Smallest in BST.
+-   **Stack**: Largest Rectangle in Histogram, Min Stack.

@@ -1,0 +1,153 @@
+---
+title: Networking Basics
+description: "In-depth guide to Networking: OSI, TCP/UDP, HTTP, DNS, WebSockets, and Security"
+---
+
+# Networking Basics
+
+## Fundamental Concepts
+
+### The Internet
+A global network of networks connecting billions of devices.
+-   **IP Address**: Unique identifier (e.g., `192.168.1.1`).
+-   **Packet**: Unit of data transmitted.
+-   **Router**: Device forwarding packets between networks.
+-   **Latency**: Time to travel (ms).
+-   **Bandwidth**: Data transfer rate (Mbps).
+
+## The OSI Model
+7-layer conceptual model characterizing communication.
+
+| Layer | Name | Function | Protocols/Devices |
+| :--- | :--- | :--- | :--- |
+| 7 | **Application** | User-level API | HTTP, FTP, SMTP, SSH |
+| 6 | **Presentation** | Data translation/encryption | SSL/TLS, JPEG, ASCII |
+| 5 | **Session** | Session management | Sockets, APIs |
+| 4 | **Transport** | Reliable delivery, Flow control | TCP, UDP |
+| 3 | **Network** | Routing, Addressing | IP, ICMP, Routers |
+| 2 | **Data Link** | Physical addressing, framing | Ethernet, MAC, Switches |
+| 1 | **Physical** | Bits over wire | Cables, Hubs |
+
+*Mnemonic: **P**lease **D**o **N**ot **T**hrow **S**ausage **P**izza **A**way*
+
+## Transport Layer: TCP vs UDP
+
+### TCP (Transmission Control Protocol)
+-   **Connection-oriented**: 3-way handshake.
+-   **Reliable**: ACKs, Retransmission, Ordering.
+-   **Heavyweight**: Header 20-60 bytes.
+-   **Use**: Web (HTTP), Email, File Transfer.
+-   **Flow Control**: Sliding Window.
+-   **Congestion Control**: Slow Start.
+
+**3-Way Handshake**:
+1.  **SYN**: Client sends sequence number $x$.
+2.  **SYN-ACK**: Server ACKs $x+1$, sends $y$.
+3.  **ACK**: Client ACKs $y+1$.
+
+### UDP (User Datagram Protocol)
+-   **Connectionless**: No handshake.
+-   **Unreliable**: No ACKs, no order guarantee.
+-   **Lightweight**: Header 8 bytes.
+-   **Use**: Streaming, Gaming, DNS, VoIP.
+
+## Application Layer: HTTP
+
+### HTTP/1.1 vs HTTP/2 vs HTTP/3
+-   **HTTP/1.1**: Text-based. Keep-alive. Head-of-line blocking.
+-   **HTTP/2**: Binary. Multiplexing (multiple requests over one conn). Header compression (HPACK). Server Push.
+-   **HTTP/3**: Based on **QUIC** (UDP). Solves TCP head-of-line blocking.
+
+### Methods
+-   **GET**: Retrieve resource (Idempotent).
+-   **POST**: Create resource.
+-   **PUT**: Update/Replace resource (Idempotent).
+-   **PATCH**: Partial update.
+-   **DELETE**: Delete resource.
+
+### Status Codes
+-   **200**: OK.
+-   **301**: Moved Permanently.
+-   **400**: Bad Request.
+-   **401**: Unauthorized (No auth).
+-   **403**: Forbidden (Has auth, no permission).
+-   **404**: Not Found.
+-   **500**: Internal Server Error.
+-   **502**: Bad Gateway.
+
+### HTTPS & TLS (SSL)
+Secure version of HTTP.
+**Handshake**:
+1.  ClientHello (Cipher suites, Random).
+2.  ServerHello (Selected cipher, Cert, Random).
+3.  Key Exchange (Diffie-Hellman or RSA).
+4.  Finished.
+**Symmetric Encryption**: Used for data transfer (AES).
+**Asymmetric Encryption**: Used for handshake (RSA/ECC).
+
+## Core Infrastructure
+
+### DNS (Domain Name System)
+Phonebook of the internet. Maps `google.com` $\to$ `142.250.190.46`.
+**Resolution Steps**:
+1.  Browser Cache.
+2.  OS Cache.
+3.  Resolver (ISP).
+4.  Root Server (.).
+5.  TLD Server (.com).
+6.  Authoritative Server (google.com).
+
+**Record Types**:
+-   **A**: IPv4.
+-   **AAAA**: IPv6.
+-   **CNAME**: Alias (domain to domain).
+-   **MX**: Mail.
+-   **NS**: Name Server.
+
+### Load Balancers
+Distributes traffic across servers.
+-   **L4 LB**: Transport layer. Routes based on IP/Port. Fast.
+-   **L7 LB**: Application layer. Routes based on URL, Cookies, Headers. Smarter.
+-   **Algorithms**: Round Robin, Least Connections, Consistent Hashing.
+
+### WebSockets
+Persistent full-duplex connection.
+-   Handshake via HTTP Upgrade header.
+-   Low latency real-time (Chat, Feeds).
+
+## Security Concepts
+
+-   **CORS (Cross-Origin Resource Sharing)**: Browser mechanism restricting requests to different domains.
+-   **XSS (Cross-Site Scripting)**: Injecting scripts into client pages. Mitigation: CSP, Escaping.
+-   **CSRF (Cross-Site Request Forgery)**: Tricking user to perform action. Mitigation: Anti-CSRF tokens.
+-   **SQL Injection**: Malicious SQL queries. Mitigation: Prepared Statements.
+-   **DDOS**: Overwhelming server. Mitigation: Rate Limiting, CDN.
+
+## Interview Problem Types
+
+### Type 1: Troubleshooting
+| **Scenario** | **Approach** |
+| :--- | :--- |
+| "google.com" is slow | Check DNS, Ping (Latency), Traceroute (Path), Server Load. |
+| 502 Bad Gateway | Check Upstream Server (App server down?), Logs. |
+
+### Type 2: Protocol Design
+| **Scenario** | **Approach** |
+| :--- | :--- |
+| Design Video Chat | UDP (Real-time, packet loss OK). WebRTC. |
+| Design File Upload | TCP (Reliability critical). Chunking. |
+
+## Quick Reference
+
+-   **Port 80**: HTTP.
+-   **Port 443**: HTTPS.
+-   **Port 22**: SSH.
+-   **Port 53**: DNS.
+-   **Localhost**: `127.0.0.1`.
+-   **Subnet Mask**: Defines network size (e.g., `/24`).
+
+## Practice Problem Categories
+
+-   **Browser**: What happens when you type a URL?
+-   **Security**: Explain HTTPS handshake.
+-   **Design**: API Rate Limiter, Chat System Protocol.

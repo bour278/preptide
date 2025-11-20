@@ -1,0 +1,394 @@
+---
+title: Machine Learning Algorithms
+description: "K-Means, KNN, SVM, PCA, t-SNE, and Johnson-Lindenstrauss"
+---
+
+# Machine Learning Algorithms
+
+## Unsupervised Learning
+
+### 1. K-Means Clustering
+Partition $n$ observations into $k$ clusters ($S_1, \dots, S_k$) to minimize within-cluster sum of squares (variance).
+
+**Objective**:
+$$\min_S \sum_{i=1}^k \sum_{x \in S_i} \|x - \mu_i\|^2$$
+where $\mu_i$ is the mean of points in $S_i$.
+
+**Algorithm (Lloyd's)**:
+1.  **Initialization**: Randomly select $k$ centroids (or use K-Means++).
+2.  **Assignment**: Assign each observation to the cluster with the nearest mean.
+    $$S_i^{(t)} = \{x_p : \|x_p - \mu_i^{(t)}\|^2 \le \|x_p - \mu_j^{(t)}\|^2 \forall j\}$$
+3.  **Update**: Recalculate means (centroids) for observations assigned to each cluster.
+    $$\mu_i^{(t+1)} = \frac{1}{|S_i^{(t)}|} \sum_{x_j \in S_i^{(t)}} x_j$$
+4.  Repeat 2-3 until convergence.
+
+**K-Means++ Initialization**: Choose first centroid randomly, then choose next with probability proportional to squared distance from nearest existing centroid. Guarantees $O(\log k)$-approximation.
+
+**Complexity**: $O(nkdT)$ where $n$ = points, $k$ = clusters, $d$ = dimensions, $T$ = iterations.
+
+**Limitations**:
+-   Assumes spherical clusters of similar size.
+-   Sensitive to initialization and outliers.
+-   Must specify $k$ in advance.
+
+**Choosing $k$**: Elbow method (plot inertia vs $k$), Silhouette analysis.
+
+### 2. Hierarchical Clustering
+Build a tree of clusters.
+
+**Agglomerative (Bottom-Up)**:
+1.  Start with each point as a cluster.
+2.  Merge closest clusters.
+3.  Repeat until one cluster remains.
+
+**Linkage Criteria**:
+-   **Single**: $\min\{d(a, b) : a \in A, b \in B\}$ (can form long chains).
+-   **Complete**: $\max\{d(a, b) : a \in A, b \in B\}$ (compact clusters).
+-   **Average**: Average of all pairwise distances.
+-   **Ward**: Minimizes within-cluster variance (similar to K-Means).
+
+**Dendrogram**: Tree visualization. Cut at desired height to get $k$ clusters.
+
+**Complexity**: $O(n^3)$ or $O(n^2 \log n)$ with efficient data structures.
+
+### 3. DBSCAN (Density-Based Spatial Clustering)
+Clusters based on density. Can find arbitrary-shaped clusters and identify outliers.
+
+**Parameters**:
+-   $\epsilon$: Neighborhood radius.
+-   MinPts: Minimum points to form dense region.
+
+**Point Types**:
+-   **Core**: Has $\geq$ MinPts within $\epsilon$.
+-   **Border**: Within $\epsilon$ of core point but not core itself.
+-   **Noise**: Neither core nor border.
+
+**Algorithm**:
+1.  For each unvisited point, check if it's a core point.
+2.  If core, start a new cluster and expand by adding all reachable points.
+3.  Points not assigned are noise.
+
+**Advantages**: No need to specify $k$, finds arbitrary shapes, handles noise.
+**Disadvantages**: Sensitive to $\epsilon$ and MinPts, struggles with varying densities.
+
+### 4. Gaussian Mixture Models (GMM)
+Probabilistic model assuming data comes from mixture of Gaussians.
+
+**Model**:
+$$P(x) = \sum_{k=1}^K \pi_k \mathcal{N}(x | \mu_k, \Sigma_k)$$
+
+where $\sum \pi_k = 1$ (mixing coefficients).
+
+**EM Algorithm for GMM**:
+-   **E-Step**: Compute responsibilities (posterior probabilities).
+    $$\gamma_{ik} = \frac{\pi_k \mathcal{N}(x_i | \mu_k, \Sigma_k)}{\sum_{j=1}^K \pi_j \mathcal{N}(x_i | \mu_j, \Sigma_j)}$$
+-   **M-Step**: Update parameters using weighted MLE.
+    $$\pi_k = \frac{1}{n}\sum_i \gamma_{ik}$$
+    $$\mu_k = \frac{\sum_i \gamma_{ik} x_i}{\sum_i \gamma_{ik}}$$
+    $$\Sigma_k = \frac{\sum_i \gamma_{ik} (x_i - \mu_k)(x_i - \mu_k)^T}{\sum_i \gamma_{ik}}$$
+
+**Advantages**: Soft assignments, probabilistic, can model elliptical clusters.
+
+### 5. Principal Component Analysis (PCA)
+Orthogonal linear transformation that projects data to a new coordinate system where the greatest variance comes to lie on the first coordinate (PC1), etc.
+
+**Objective**: Find directions of maximum variance.
+
+**Algorithm** (Covariance Method):
+1.  Center data: $X \leftarrow X - \bar{X}$.
+2.  Compute Covariance Matrix: $C = \frac{1}{n-1} X^T X$.
+3.  Eigen Decomposition: $C v = \lambda v$.
+4.  Sort eigenvectors by eigenvalues (descending).
+5.  Project $X$ onto top $k$ eigenvectors ($W_k$): $Z = X W_k$.
+
+**SVD Approach**:
+$$X = U \Sigma V^T$$
+Principal Components are columns of $V$. PC scores are $U \Sigma$.
+
+**Variance Explained**:
+$$\frac{\lambda_i}{\sum_j \lambda_j}$$
+
+**Whitening**: Transform to unit variance: $Z = X W_k \Lambda_k^{-1/2}$ where $\Lambda_k = \text{diag}(\lambda_1, \ldots, \lambda_k)$.
+
+**Kernel PCA**: Apply PCA in feature space via kernel trick. Captures nonlinear relationships.
+
+### 6. Independent Component Analysis (ICA)
+Finds statistically independent components. Unlike PCA, components are maximally independent (not just uncorrelated).
+
+**Cocktail Party Problem**: Separate mixed audio sources.
+
+**Objective**: Maximize non-Gaussianity (e.g., kurtosis, negentropy).
+
+**Algorithms**: FastICA, Infomax.
+
+### 7. t-SNE (t-Distributed Stochastic Neighbor Embedding)
+Non-linear dimensionality reduction for visualization. Minimizes KL divergence between joint probabilities in high-dimensional space ($P$) and low-dimensional space ($Q$).
+
+**High-dim similarity ($p_{j|i}$)**: Gaussian.
+$$p_{j|i} = \frac{\exp(-\|x_i - x_j\|^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-\|x_i - x_k\|^2 / 2\sigma_i^2)}$$
+
+Symmetrize: $p_{ij} = \frac{p_{j|i} + p_{i|j}}{2n}$.
+
+**Low-dim similarity ($q_{ij}$)**: Student t-distribution (1 degree of freedom).
+$$q_{ij} = \frac{(1 + \|y_i - y_j\|^2)^{-1}}{\sum_{k \neq l} (1 + \|y_k - y_l\|^2)^{-1}}$$
+
+**Objective**:
+$$\min C = \sum_i D_{KL}(P_i \| Q_i) = \sum_i \sum_j p_{ij} \log \frac{p_{ij}}{q_{ij}}$$
+
+Optimized via Gradient Descent with momentum.
+
+**Perplexity**: Balances local vs global structure. Typical: 5-50.
+
+**Properties**:
+-   Preserves local structure well.
+-   Computationally expensive ($O(n^2)$, can use Barnes-Hut for $O(n \log n)$).
+-   Non-convex, sensitive to hyperparameters.
+
+### 8. UMAP (Uniform Manifold Approximation and Projection)
+Modern alternative to t-SNE. Faster, preserves global structure better.
+
+**Based on**: Riemannian geometry and algebraic topology.
+
+**Advantages**: Faster, scales better, preserves both local and global structure.
+
+### 9. Autoencoders
+Neural network that learns compressed representation.
+
+**Architecture**: Encoder $f$, Decoder $g$. Minimize reconstruction error:
+$$\min \sum_i \|x_i - g(f(x_i))\|^2$$
+
+**Variants**:
+-   **Variational Autoencoder (VAE)**: Learns probabilistic latent space. Regularized with KL divergence.
+-   **Denoising Autoencoder**: Trained to reconstruct from corrupted input.
+-   **Sparse Autoencoder**: Adds sparsity penalty on hidden activations.
+
+### 10. Dimensionality Reduction Theory
+
+**Johnson-Lindenstrauss Lemma**:
+A set of $m$ points in high-dimensional space $\mathbb{R}^N$ can be embedded into $\mathbb{R}^k$ (where $k < N$) such that distances between points are nearly preserved.
+
+**Bound**:
+$$k \ge \frac{4 \ln m}{\epsilon^2 / 2 - \epsilon^3 / 3}$$
+
+Distances preserved within factor $(1 \pm \epsilon)$ with high probability.
+
+**Method**: Random Projection using a matrix $R \in \mathbb{R}^{k \times N}$ with entries $\sim \mathcal{N}(0, 1/k)$ or Rademacher ($\pm 1/\sqrt{k}$).
+
+**Applications**: Fast nearest neighbor search, compressed sensing.
+
+## Supervised Learning
+
+### 1. K-Nearest Neighbors (KNN)
+Instance-based learning. Classify new point based on majority vote of $k$ nearest neighbors.
+
+**Algorithm**:
+1.  Compute distances from $x_{new}$ to all training points.
+2.  Select $k$ nearest neighbors.
+3.  **Classification**: Majority vote. **Regression**: Average of neighbors' values.
+
+**Distance Metrics**:
+-   **Euclidean**: $\|x-y\|_2 = \sqrt{\sum (x_i - y_i)^2}$
+-   **Manhattan**: $\|x-y\|_1 = \sum |x_i - y_i|$
+-   **Minkowski**: $\|x-y\|_p = (\sum |x_i - y_i|^p)^{1/p}$
+-   **Cosine**: $1 - \frac{x \cdot y}{\|x\| \|y\|}$
+-   **Mahalanobis**: $\sqrt{(x-y)^T \Sigma^{-1} (x-y)}$ (accounts for covariance)
+
+**Choosing $k$**:
+-   Small $k$: Low bias, high variance (sensitive to noise).
+-   Large $k$: High bias, low variance (smooth boundaries).
+-   Use cross-validation.
+
+**Weighted KNN**: Weight by inverse distance.
+
+**Complexity**: $O(nd)$ per query (naive). Can use KD-Tree or Ball Tree for $O(\log n)$ in low dimensions.
+
+**Curse of Dimensionality**: Performance degrades in high dimensions as distances become similar.
+
+### 2. Decision Trees
+Hierarchical model that splits data based on feature values.
+
+**CART (Classification and Regression Trees)**:
+
+**Splitting Criterion** (Classification):
+-   **Gini Impurity**: $G = 1 - \sum_{i=1}^C p_i^2$ where $p_i$ is fraction of class $i$.
+-   **Entropy**: $H = -\sum_{i=1}^C p_i \log p_i$.
+-   **Misclassification Rate**: $1 - \max_i p_i$.
+
+**Splitting Criterion** (Regression):
+-   **Variance Reduction**: Choose split that minimizes $\sum_{left} (y_i - \bar{y}_{left})^2 + \sum_{right} (y_i - \bar{y}_{right})^2$.
+
+**Algorithm**:
+1.  Find best split (feature and threshold) that maximizes information gain.
+2.  Recursively split child nodes.
+3.  Stop when: max depth reached, min samples per leaf, or no improvement.
+
+**Pruning**: Remove branches to prevent overfitting.
+-   **Pre-pruning**: Stop early based on criteria.
+-   **Post-pruning**: Grow full tree, then remove branches (cost-complexity pruning).
+
+**Advantages**: Interpretable, handles non-linear relationships, no scaling needed.
+**Disadvantages**: High variance (unstable), can overfit, axis-aligned splits only.
+
+### 3. Random Forest
+Ensemble of decision trees. Reduces variance via bagging and feature randomness.
+
+**Algorithm**:
+1.  For $b = 1$ to $B$ (number of trees):
+    -   Sample $n$ training examples with replacement (bootstrap).
+    -   At each split, consider random subset of $m \approx \sqrt{p}$ features.
+    -   Grow tree to maximum depth (no pruning).
+2.  **Prediction**: Average (regression) or majority vote (classification).
+
+**Out-of-Bag (OOB) Error**: Evaluate each tree on samples not in its bootstrap sample. Provides validation without separate test set.
+
+**Feature Importance**: Measure decrease in impurity when splitting on feature, averaged across all trees.
+
+**Advantages**: Low variance, parallel, handles high-dimensional data, robust to outliers.
+**Disadvantages**: Less interpretable, can be slow for large forests.
+
+### 4. Gradient Boosting
+Ensemble method that builds trees sequentially, each correcting errors of previous ones.
+
+**Algorithm** (for regression):
+1.  Initialize model with constant: $F_0(x) = \arg\min_\gamma \sum_{i=1}^n L(y_i, \gamma)$.
+2.  For $m = 1$ to $M$:
+    -   Compute pseudo-residuals: $r_{im} = -\left[\frac{\partial L(y_i, F(x_i))}{\partial F(x_i)}\right]_{F=F_{m-1}}$.
+    -   Fit regression tree to $r_{im}$ giving terminal regions $R_{jm}$.
+    -   For each region, compute: $\gamma_{jm} = \arg\min_\gamma \sum_{x_i \in R_{jm}} L(y_i, F_{m-1}(x_i) + \gamma)$.
+    -   Update: $F_m(x) = F_{m-1}(x) + \nu \sum_{j} \gamma_{jm} \mathbb{1}_{x \in R_{jm}}$.
+
+where $\nu$ is learning rate (shrinkage).
+
+**Variants**:
+-   **XGBoost**: Adds regularization, parallel processing, handles missing values.
+-   **LightGBM**: Histogram-based, leaf-wise growth. Very fast.
+-   **CatBoost**: Handles categorical features natively, reduces overfitting.
+
+**Advantages**: State-of-the-art performance on tabular data, handles mixed data types.
+**Disadvantages**: Prone to overfitting if not tuned, sequential (slow to train).
+
+### 5. Support Vector Machines (SVM)
+Finds hyperplane that maximizes the **margin** between classes.
+
+**Primal Problem (Hard Margin)**:
+$$\min_{w, b} \frac{1}{2} \|w\|^2$$
+$$\text{s.t. } y_i(w^T x_i + b) \ge 1, \quad \forall i$$
+
+**Margin**: $\frac{2}{\|w\|}$. Maximizing margin is equivalent to minimizing $\|w\|^2$.
+
+**Support Vectors**: Training points on the margin. Only these affect the solution.
+
+**Soft Margin (Hinge Loss)**:
+Allow some misclassifications with slack variables $\xi_i$.
+
+$$\min_{w, b} \frac{1}{2} \|w\|^2 + C \sum_{i=1}^n \xi_i$$
+$$\text{s.t. } y_i(w^T x_i + b) \ge 1 - \xi_i, \quad \xi_i \ge 0$$
+
+**$C$**: Regularization parameter. Large $C$ = less regularization (hard margin). Small $C$ = more regularization (soft margin).
+
+**Dual Formulation** (using Lagrange multipliers):
+$$\max_{\alpha} \sum_{i=1}^n \alpha_i - \frac{1}{2} \sum_{i,j} \alpha_i \alpha_j y_i y_j x_i^T x_j$$
+$$\text{s.t. } 0 \le \alpha_i \le C, \quad \sum_{i=1}^n \alpha_i y_i = 0$$
+
+**Decision Function**:
+$$f(x) = \text{sign}\left(\sum_{i \in SV} \alpha_i y_i x_i^T x + b\right)$$
+
+**Kernel Trick**: Map $x \to \phi(x)$. Compute dot products in high-dim space using $K(x_i, x_j) = \phi(x_i)^T \phi(x_j)$ without explicitly computing $\phi$.
+
+**Common Kernels**:
+-   **Linear**: $K(x, y) = x^T y$
+-   **Polynomial**: $K(x, y) = (x^T y + c)^d$
+-   **RBF (Gaussian)**: $K(x, y) = \exp(-\gamma \|x - y\|^2)$
+-   **Sigmoid**: $K(x, y) = \tanh(\alpha x^T y + c)$
+
+**RBF $\gamma$ parameter**: Controls influence radius. Small $\gamma$ = wide influence (smooth). Large $\gamma$ = narrow influence (complex boundary).
+
+**Multi-Class SVM**:
+-   **One-vs-Rest (OvR)**: Train $K$ binary classifiers.
+-   **One-vs-One (OvO)**: Train $\binom{K}{2}$ classifiers for each pair.
+
+**Advantages**: Effective in high dimensions, memory efficient (only uses support vectors), versatile (kernels).
+**Disadvantages**: Slow for large datasets ($O(n^2)$ to $O(n^3)$), sensitive to feature scaling and $C, \gamma$.
+
+### 6. Naive Bayes
+See Statistics section. Probabilistic classifier based on Bayes' Theorem with independence assumptions.
+
+### 7. Ensemble Methods
+
+**Bagging (Bootstrap Aggregating)**: Train models on bootstrap samples, average predictions. Reduces variance.
+
+**Boosting**: Train models sequentially, each correcting previous errors. Reduces bias. Examples: AdaBoost, Gradient Boosting.
+
+**Stacking**: Train meta-model on predictions of base models.
+
+**Voting**:
+-   **Hard Voting**: Majority vote.
+-   **Soft Voting**: Average predicted probabilities.
+
+## Recommendation Systems
+
+### 1. Collaborative Filtering
+Recommend based on user-item interactions.
+
+**User-Based**: Find similar users, recommend items they liked.
+
+**Item-Based**: Find similar items, recommend items similar to what user liked.
+
+**Similarity Measures**: Cosine, Pearson correlation.
+
+### 2. Matrix Factorization
+Decompose user-item matrix $R \approx UV^T$ where $U$ (users) and $V$ (items) are low-rank.
+
+**Objective**:
+$$\min_{U, V} \sum_{(i,j) \in \text{observed}} (R_{ij} - U_i^T V_j)^2 + \lambda(\|U\|_F^2 + \|V\|_F^2)$$
+
+**Algorithm**: ALS (Alternating Least Squares), SGD.
+
+**SVD**: Special case of matrix factorization.
+
+### 3. Content-Based Filtering
+Recommend based on item features and user profile.
+
+### 4. Hybrid Methods
+Combine collaborative and content-based filtering.
+
+## Model Evaluation
+
+### 1. Confusion Matrix
+For binary classification:
+
+|  | Predicted Positive | Predicted Negative |
+|---|---|---|
+| **Actual Positive** | True Positive (TP) | False Negative (FN) |
+| **Actual Negative** | False Positive (FP) | True Negative (TN) |
+
+**Accuracy**: $\frac{TP + TN}{TP + TN + FP + FN}$
+
+**Precision**: $\frac{TP}{TP + FP}$ (of predicted positives, how many are correct?)
+
+**Recall (Sensitivity, TPR)**: $\frac{TP}{TP + FN}$ (of actual positives, how many did we catch?)
+
+**Specificity (TNR)**: $\frac{TN}{TN + FP}$ (of actual negatives, how many did we correctly identify?)
+
+**F1 Score**: $\frac{2TP}{2TP + FP + FN}$ (harmonic mean of precision and recall).
+
+**F-beta Score**: $\frac{(1+\beta^2) \cdot \text{Precision} \cdot \text{Recall}}{\beta^2 \cdot \text{Precision} + \text{Recall}}$. $\beta > 1$ weighs recall higher.
+
+### 2. ROC and AUC
+**ROC Curve**: Plot TPR (Recall) vs FPR at various thresholds.
+
+**AUC (Area Under Curve)**: Higher is better. $AUC = 1$ is perfect, $AUC = 0.5$ is random.
+
+**Interpretation**: Probability that a random positive is scored higher than a random negative.
+
+### 3. Precision-Recall Curve
+Useful for imbalanced datasets. Plot Precision vs Recall at various thresholds.
+
+**Average Precision (AP)**: Area under PR curve.
+
+### 4. Calibration
+Do predicted probabilities match empirical frequencies?
+
+**Calibration Curve**: Plot predicted probability vs observed frequency.
+
+**Brier Score**: $\frac{1}{n}\sum (p_i - y_i)^2$ (lower is better). Measures calibration + discrimination.

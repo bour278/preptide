@@ -1,0 +1,714 @@
+---
+title: Random Variables
+description: Interview prep for random variables, moments, MGFs, characteristic functions, and cumulants
+---
+
+# Random Variables, Moments, and Cumulants
+
+## Fundamental Concepts
+
+### Random Variables
+
+A **random variable** is a function from the sample space to the real numbers:
+
+$$X: \Omega \to \mathbb{R}$$
+
+**Discrete random variable**: Takes countable values $\{x_1, x_2, x_3, ...\}$
+
+**Continuous random variable**: Takes values in an interval or union of intervals
+
+**Mixed random variable**: Has both discrete and continuous components
+
+### Probability Mass Function (PMF)
+
+For discrete random variable X:
+
+$$p_X(x) = P(X = x)$$
+
+**Properties**:
+- $p_X(x) \geq 0$ for all $x$
+- $\sum_{x} p_X(x) = 1$
+
+### Probability Density Function (PDF)
+
+For continuous random variable X:
+
+$$P(a \leq X \leq b) = \int_a^b f_X(x) \, dx$$
+
+**Properties**:
+- $f_X(x) \geq 0$ for all $x$
+- $\int_{-\infty}^{\infty} f_X(x) \, dx = 1$
+- Note: $P(X = x) = 0$ for continuous X (but $f_X(x)$ can be > 1)
+
+### Cumulative Distribution Function (CDF)
+
+$$F_X(x) = P(X \leq x)$$
+
+**Properties**:
+- Non-decreasing: $F_X(x_1) \leq F_X(x_2)$ if $x_1 \leq x_2$
+- Right-continuous
+- $\lim_{x \to -\infty} F_X(x) = 0$ and $\lim_{x \to \infty} F_X(x) = 1$
+
+**Relationships**:
+- Discrete: $F_X(x) = \sum_{x_i \leq x} p_X(x_i)$
+- Continuous: $F_X(x) = \int_{-\infty}^x f_X(t) \, dt$ and $f_X(x) = \frac{d}{dx} F_X(x)$
+
+## Moments
+
+### Raw Moments
+
+The **$n$-th raw moment** (or moment about the origin):
+
+$$\mu_n' = E[X^n]$$
+
+**Discrete**: $\mu_n' = \sum_x x^n \cdot p_X(x)$
+
+**Continuous**: $\mu_n' = \int_{-\infty}^{\infty} x^n \cdot f_X(x) \, dx$
+
+**Special cases**:
+- $\mu_1' = E[X]$ (mean)
+- $\mu_2' = E[X^2]$
+
+### Central Moments
+
+The **$n$-th central moment** (moment about the mean):
+
+$$\mu_n = E[(X - \mu)^n]$$
+
+where $\mu = E[X]$.
+
+**Special cases**:
+- $\mu_0 = 1$ (always)
+- $\mu_1 = 0$ (always)
+- $\mu_2 = E[(X - \mu)^2] = \text{Var}(X)$ (variance)
+- $\mu_3 = E[(X - \mu)^3]$ (related to skewness)
+- $\mu_4 = E[(X - \mu)^4]$ (related to kurtosis)
+
+### Standardized Moments
+
+**Skewness** (third standardized moment):
+
+$$\gamma_1 = \frac{\mu_3}{\sigma^3} = \frac{E[(X - \mu)^3]}{(\text{Var}(X))^{3/2}}$$
+
+**Interpretation**:
+- $\gamma_1 = 0$: symmetric distribution
+- $\gamma_1 > 0$: right-skewed (long right tail)
+- $\gamma_1 < 0$: left-skewed (long left tail)
+
+**Kurtosis** (fourth standardized moment):
+
+$$\gamma_2 = \frac{\mu_4}{\sigma^4} = \frac{E[(X - \mu)^4]}{(\text{Var}(X))^2}$$
+
+**Excess kurtosis**:
+
+$$\text{Excess kurtosis} = \gamma_2 - 3$$
+
+**Interpretation**:
+- $\gamma_2 = 3$ (excess = 0): mesokurtic (normal distribution)
+- $\gamma_2 > 3$ (excess > 0): leptokurtic (heavy tails, sharp peak)
+- $\gamma_2 < 3$ (excess < 0): platykurtic (light tails, flat peak)
+
+### Moment Relationships
+
+**Variance formula**:
+
+$$\text{Var}(X) = E[X^2] - (E[X])^2 = \mu_2' - (\mu_1')^2$$
+
+**General relationship**: Central moments can be expressed in terms of raw moments using binomial expansion:
+
+$$\mu_n = \sum_{k=0}^{n} \binom{n}{k} (-\mu)^{n-k} \mu_k'$$
+
+**Example**:
+
+$$\mu_2 = \mu_2' - (\mu_1')^2$$
+
+$$\mu_3 = \mu_3' - 3\mu_1'\mu_2' + 2(\mu_1')^3$$
+
+$$\mu_4 = \mu_4' - 4\mu_1'\mu_3' + 6(\mu_1')^2\mu_2' - 3(\mu_1')^4$$
+
+## Moment Generating Functions (MGF)
+
+### Definition
+
+The **moment generating function** of X:
+
+$$M_X(t) = E[e^{tX}]$$
+
+**Discrete**: $M_X(t) = \sum_x e^{tx} p_X(x)$
+
+**Continuous**: $M_X(t) = \int_{-\infty}^{\infty} e^{tx} f_X(x) \, dx$
+
+**Domain**: Defined for $t$ in some neighborhood of 0 (may not exist for all distributions)
+
+### Properties of MGF
+
+**Moments from MGF**:
+
+$$E[X^n] = M_X^{(n)}(0) = \left. \frac{d^n}{dt^n} M_X(t) \right|_{t=0}$$
+
+**Why "moment generating"**: Taylor expansion around $t=0$ gives:
+
+$$M_X(t) = \sum_{n=0}^{\infty} \frac{E[X^n]}{n!} t^n = 1 + E[X]t + \frac{E[X^2]}{2!}t^2 + \frac{E[X^3]}{3!}t^3 + \cdots$$
+
+**Uniqueness**: If MGF exists in a neighborhood of 0, it uniquely determines the distribution.
+
+**Sum of independent RVs**: If X and Y are independent:
+
+$$M_{X+Y}(t) = M_X(t) \cdot M_Y(t)$$
+
+**Scaling and shifting**:
+
+$$M_{aX+b}(t) = e^{bt} M_X(at)$$
+
+### Common MGFs
+
+| Distribution | MGF $M_X(t)$ |
+|--------------|--------------|
+| Bernoulli($p$) | $1 - p + pe^t$ |
+| Binomial($n,p$) | $(1 - p + pe^t)^n$ |
+| Geometric($p$) | $\frac{pe^t}{1 - (1-p)e^t}$ for $t < -\ln(1-p)$ |
+| Poisson($\lambda$) | $e^{\lambda(e^t - 1)}$ |
+| Exponential($\lambda$) | $\frac{\lambda}{\lambda - t}$ for $t < \lambda$ |
+| Normal($\mu, \sigma^2$) | $e^{\mu t + \frac{1}{2}\sigma^2 t^2}$ |
+| Gamma($\alpha, \beta$) | $\left(\frac{\beta}{\beta - t}\right)^\alpha$ for $t < \beta$ |
+
+## Characteristic Functions
+
+### Definition
+
+The **characteristic function** of X:
+
+$$\phi_X(t) = E[e^{itX}]$$
+
+where $i = \sqrt{-1}$.
+
+**Always exists** (unlike MGF) because $|e^{itX}| = 1$.
+
+**Relationship to MGF**: $\phi_X(t) = M_X(it)$ when MGF exists.
+
+### Properties of Characteristic Functions
+
+**Uniqueness**: Uniquely determines the distribution (Lévy's continuity theorem).
+
+**Moments**: If moments exist:
+
+$$E[X^n] = \frac{1}{i^n} \phi_X^{(n)}(0)$$
+
+**Sum of independent RVs**:
+
+$$\phi_{X+Y}(t) = \phi_X(t) \cdot \phi_Y(t)$$
+
+**Inversion formula**: Can recover PDF/PMF from characteristic function (Fourier inversion).
+
+### Why Characteristic Functions Are Useful
+
+- Always exist (MGF may not)
+- Uniquely determine distributions
+- Simplify convolution (sum of independent RVs)
+- Central to proving Central Limit Theorem
+
+## Cumulants
+
+### Definition
+
+**Cumulants** are alternative descriptors of a distribution, defined via the **cumulant generating function**:
+
+$$K_X(t) = \ln M_X(t)$$
+
+The **$n$-th cumulant** $\kappa_n$ is:
+
+$$\kappa_n = \left. \frac{d^n}{dt^n} K_X(t) \right|_{t=0}$$
+
+**Taylor expansion**:
+
+$$K_X(t) = \sum_{n=1}^{\infty} \kappa_n \frac{t^n}{n!}$$
+
+### Cumulants vs. Moments
+
+**First few cumulants**:
+- $\kappa_1 = \mu$ (mean)
+- $\kappa_2 = \sigma^2 = \text{Var}(X)$ (variance)
+- $\kappa_3 = \mu_3 = E[(X - \mu)^3]$ (third central moment)
+- $\kappa_4 = \mu_4 - 3\sigma^4$ (excess kurtosis times $\sigma^4$)
+
+**General relationship**: Cumulants can be expressed in terms of moments (and vice versa) using Bell polynomials.
+
+### Properties of Cumulants
+
+**Additivity for independent variables**: If X and Y are independent:
+
+$$\kappa_n(X + Y) = \kappa_n(X) + \kappa_n(Y)$$
+
+This is **much simpler** than for moments (which require convolution).
+
+**Scaling**:
+
+$$\kappa_n(aX) = a^n \kappa_n(X)$$
+
+**Translation**:
+
+$$\kappa_1(X + b) = \kappa_1(X) + b$$
+
+$$\kappa_n(X + b) = \kappa_n(X) \text{ for } n \geq 2$$
+
+**Normal distribution**: For $X \sim \mathcal{N}(\mu, \sigma^2)$:
+
+$$\kappa_1 = \mu, \quad \kappa_2 = \sigma^2, \quad \kappa_n = 0 \text{ for } n \geq 3$$
+
+This characterizes the normal distribution!
+
+### Why Cumulants Are Useful
+
+- Cumulants of sums of independent RVs add (moments don't)
+- Easier algebra for sums and convolutions
+- Normal distribution has only two non-zero cumulants
+- Natural for Central Limit Theorem analysis
+- Appear in statistical physics (connected correlation functions)
+
+## Multivariate Random Variables
+
+### Joint Distributions
+
+For random variables $X$ and $Y$:
+
+**Joint PMF** (discrete):
+
+$$p_{X,Y}(x,y) = P(X = x, Y = y)$$
+
+**Joint PDF** (continuous):
+
+$$P((X,Y) \in A) = \iint_A f_{X,Y}(x,y) \, dx \, dy$$
+
+**Joint CDF**:
+
+$$F_{X,Y}(x,y) = P(X \leq x, Y \leq y)$$
+
+### Marginal Distributions
+
+**Discrete**:
+
+$$p_X(x) = \sum_y p_{X,Y}(x,y)$$
+
+**Continuous**:
+
+$$f_X(x) = \int_{-\infty}^{\infty} f_{X,Y}(x,y) \, dy$$
+
+### Conditional Distributions
+
+**Discrete**:
+
+$$p_{X|Y}(x|y) = \frac{p_{X,Y}(x,y)}{p_Y(y)}$$
+
+**Continuous**:
+
+$$f_{X|Y}(x|y) = \frac{f_{X,Y}(x,y)}{f_Y(y)}$$
+
+### Independence
+
+X and Y are independent if and only if:
+
+$$f_{X,Y}(x,y) = f_X(x) \cdot f_Y(y) \quad \text{for all } x, y$$
+
+Equivalently:
+- $P(X \in A, Y \in B) = P(X \in A) \cdot P(Y \in B)$ for all sets $A, B$
+- $E[g(X)h(Y)] = E[g(X)] \cdot E[h(Y)]$ for all functions $g, h$
+
+## Covariance and Correlation
+
+### Covariance
+
+$$\text{Cov}(X, Y) = E[(X - E[X])(Y - E[Y])] = E[XY] - E[X]E[Y]$$
+
+**Properties**:
+- $\text{Cov}(X, X) = \text{Var}(X)$
+- $\text{Cov}(X, Y) = \text{Cov}(Y, X)$ (symmetric)
+- $\text{Cov}(aX + b, Y) = a \cdot \text{Cov}(X, Y)$
+- If X and Y are independent: $\text{Cov}(X, Y) = 0$ (but converse not always true)
+
+**Variance of sum**:
+
+$$\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X, Y)$$
+
+**General sum**:
+
+$$\text{Var}\left(\sum_{i=1}^n X_i\right) = \sum_{i=1}^n \text{Var}(X_i) + 2\sum_{i<j} \text{Cov}(X_i, X_j)$$
+
+### Correlation
+
+$$\rho(X, Y) = \frac{\text{Cov}(X, Y)}{\sqrt{\text{Var}(X) \cdot \text{Var}(Y)}} = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}$$
+
+**Properties**:
+- $-1 \leq \rho(X, Y) \leq 1$ (Cauchy-Schwarz inequality)
+- $|\rho| = 1$ if and only if $Y = aX + b$ for some constants $a, b$ (perfect linear relationship)
+- $\rho = 0$: uncorrelated (but not necessarily independent)
+
+**Note**: 
+- Independence $\Rightarrow$ uncorrelated
+- Uncorrelated $\not\Rightarrow$ independent (e.g., $Y = X^2$ where $X \sim \mathcal{N}(0,1)$)
+
+## Multivariate Moments
+
+### Covariance Matrix
+
+For random vector $\mathbf{X} = (X_1, X_2, ..., X_n)^T$:
+
+$$\Sigma = \text{Cov}(\mathbf{X}) = E[(\mathbf{X} - \mathbf{\mu})(\mathbf{X} - \mathbf{\mu})^T]$$
+
+where $\mathbf{\mu} = E[\mathbf{X}]$.
+
+**Matrix elements**:
+
+$$\Sigma_{ij} = \text{Cov}(X_i, X_j)$$
+
+**Properties**:
+- Symmetric: $\Sigma^T = \Sigma$
+- Positive semi-definite: $\mathbf{v}^T \Sigma \mathbf{v} \geq 0$ for all $\mathbf{v}$
+- Diagonal elements are variances: $\Sigma_{ii} = \text{Var}(X_i)$
+
+### Correlation Matrix
+
+$$\mathbf{R}_{ij} = \rho(X_i, X_j) = \frac{\text{Cov}(X_i, X_j)}{\sigma_i \sigma_j}$$
+
+**Relationship to covariance matrix**: If $\mathbf{D}$ is diagonal with $D_{ii} = \sigma_i$:
+
+$$\mathbf{R} = \mathbf{D}^{-1} \Sigma \mathbf{D}^{-1}$$
+
+### Multivariate MGF
+
+$$M_{\mathbf{X}}(\mathbf{t}) = E[e^{\mathbf{t}^T \mathbf{X}}] = E[e^{t_1 X_1 + t_2 X_2 + \cdots + t_n X_n}]$$
+
+**For independent components**: $M_{\mathbf{X}}(\mathbf{t}) = \prod_{i=1}^n M_{X_i}(t_i)$
+
+### Multivariate Characteristic Function
+
+$$\phi_{\mathbf{X}}(\mathbf{t}) = E[e^{i\mathbf{t}^T \mathbf{X}}]$$
+
+## Transformations of Random Variables
+
+### Univariate Transformations
+
+**Discrete case**: If $Y = g(X)$:
+
+$$p_Y(y) = \sum_{x: g(x) = y} p_X(x)$$
+
+**Continuous case** (monotonic $g$): If $Y = g(X)$ where $g$ is monotonic and differentiable:
+
+$$f_Y(y) = f_X(g^{-1}(y)) \left| \frac{d}{dy} g^{-1}(y) \right| = f_X(x) \left| \frac{dx}{dy} \right|$$
+
+**Non-monotonic case**: Sum over all inverse images.
+
+### Multivariate Transformations (Jacobian)
+
+For transformation $(U, V) = g(X, Y)$:
+
+$$f_{U,V}(u, v) = f_{X,Y}(x, y) |J|$$
+
+where $|J|$ is the absolute value of the Jacobian determinant:
+
+$$J = \det \begin{pmatrix} \frac{\partial x}{\partial u} & \frac{\partial x}{\partial v} \\ \frac{\partial y}{\partial u} & \frac{\partial y}{\partial v} \end{pmatrix}$$
+
+**Steps**:
+1. Express $(x, y)$ in terms of $(u, v)$
+2. Compute the Jacobian determinant
+3. Substitute into the formula
+
+### Common Transformations
+
+**Linear transformation**: If $Y = aX + b$:
+- $E[Y] = aE[X] + b$
+- $\text{Var}(Y) = a^2 \text{Var}(X)$
+
+**Sum of independent RVs**: If $Z = X + Y$ and X, Y independent:
+
+$$f_Z(z) = \int_{-\infty}^{\infty} f_X(x) f_Y(z - x) \, dx \quad \text{(convolution)}$$
+
+**Product**: If $Z = XY$ and X, Y independent:
+
+$$f_Z(z) = \int_{-\infty}^{\infty} \frac{1}{|x|} f_X(x) f_Y(z/x) \, dx$$
+
+## Multivariate Normal Distribution
+
+### Bivariate Normal
+
+For $(X, Y) \sim \mathcal{N}(\mu_X, \mu_Y, \sigma_X^2, \sigma_Y^2, \rho)$:
+
+$$f_{X,Y}(x,y) = \frac{1}{2\pi\sigma_X\sigma_Y\sqrt{1-\rho^2}} \exp\left(-\frac{1}{2(1-\rho^2)}\left[\frac{(x-\mu_X)^2}{\sigma_X^2} - \frac{2\rho(x-\mu_X)(y-\mu_Y)}{\sigma_X\sigma_Y} + \frac{(y-\mu_Y)^2}{\sigma_Y^2}\right]\right)$$
+
+**Properties**:
+- Marginals are normal: $X \sim \mathcal{N}(\mu_X, \sigma_X^2)$, $Y \sim \mathcal{N}(\mu_Y, \sigma_Y^2)$
+- If $\rho = 0$, then X and Y are independent (special to normal!)
+- Linear combinations are normal
+
+### Multivariate Normal (General)
+
+For $\mathbf{X} \sim \mathcal{N}(\boldsymbol{\mu}, \Sigma)$:
+
+$$f_{\mathbf{X}}(\mathbf{x}) = \frac{1}{(2\pi)^{n/2}|\Sigma|^{1/2}} \exp\left(-\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu})^T \Sigma^{-1} (\mathbf{x} - \boldsymbol{\mu})\right)$$
+
+**MGF**:
+
+$$M_{\mathbf{X}}(\mathbf{t}) = \exp\left(\boldsymbol{\mu}^T \mathbf{t} + \frac{1}{2}\mathbf{t}^T \Sigma \mathbf{t}\right)$$
+
+**Properties**:
+- Linear transformations are normal: If $\mathbf{Y} = A\mathbf{X} + \mathbf{b}$, then $\mathbf{Y} \sim \mathcal{N}(A\boldsymbol{\mu} + \mathbf{b}, A\Sigma A^T)$
+- Marginals are normal
+- Conditionals are normal
+- Uncorrelated components are independent
+
+## Advanced Topics
+
+### Order Statistics
+
+For i.i.d. random variables $X_1, ..., X_n$, let $X_{(1)} \leq X_{(2)} \leq \cdots \leq X_{(n)}$ be the order statistics.
+
+**PDF of $k$-th order statistic**:
+
+$$f_{X_{(k)}}(x) = \frac{n!}{(k-1)!(n-k)!} [F(x)]^{k-1} [1-F(x)]^{n-k} f(x)$$
+
+**Joint PDF of $(X_{(i)}, X_{(j)})$ for $i < j$**:
+
+$$f_{X_{(i)},X_{(j)}}(x,y) = \frac{n!}{(i-1)!(j-i-1)!(n-j)!} [F(x)]^{i-1} [F(y)-F(x)]^{j-i-1} [1-F(y)]^{n-j} f(x)f(y)$$
+
+**Minimum and Maximum**:
+- $F_{X_{(1)}}(x) = 1 - [1-F(x)]^n$
+- $F_{X_{(n)}}(x) = [F(x)]^n$
+
+### Conditional Expectation (Advanced)
+
+**Conditional expectation** $E[X|Y]$ is a random variable (function of Y):
+
+$$E[X|Y] = g(Y)$$
+
+where $g(y) = E[X|Y=y]$.
+
+**Tower property**:
+
+$$E[E[X|Y]] = E[X]$$
+
+**Taking out what's known**:
+
+$$E[g(Y)X|Y] = g(Y)E[X|Y]$$
+
+**Law of total variance**:
+
+$$\text{Var}(X) = E[\text{Var}(X|Y)] + \text{Var}(E[X|Y])$$
+
+### Copulas
+
+A **copula** is a function that links univariate marginal distributions to form a multivariate distribution.
+
+**Sklar's theorem**: For any joint distribution $F_{X,Y}(x,y)$ with marginals $F_X(x)$ and $F_Y(y)$, there exists a copula $C$ such that:
+
+$$F_{X,Y}(x,y) = C(F_X(x), F_Y(y))$$
+
+**Use**: Separate modeling of marginals and dependence structure.
+
+## Important Tricks and Techniques
+
+### Trick 1: Variance via $E[X^2] - (E[X])^2$
+
+Always easier than computing $E[(X - \mu)^2]$ directly.
+
+### Trick 2: MGF for Sums
+
+Use $M_{X+Y}(t) = M_X(t) \cdot M_Y(t)$ for independent X, Y.
+
+**Example**: Sum of independent normals is normal (check MGF).
+
+### Trick 3: Indicator Functions for Discrete Distributions
+
+$$E[X] = \sum_{k=1}^{\infty} P(X \geq k) \quad \text{for } X \in \{1, 2, 3, ...\}$$
+
+### Trick 4: Symmetry in Joint Distributions
+
+If $(X, Y)$ is symmetric (e.g., i.i.d.), then $E[X] = E[Y]$ and $\text{Var}(X) = \text{Var}(Y)$.
+
+### Trick 5: Transformation via CDF
+
+For $Y = g(X)$, find $F_Y(y) = P(Y \leq y) = P(g(X) \leq y)$, then differentiate.
+
+### Trick 6: Memoryless Property
+
+Exponential (continuous) and geometric (discrete) are the only memoryless distributions.
+
+### Trick 7: Normal Approximation via MGF/CLT
+
+If $M_{X_n}(t) \to e^{at + bt^2/2}$, then $X_n \to \mathcal{N}(a, b)$ in distribution.
+
+### Trick 8: Covariance Matrix for Linear Combinations
+
+If $\mathbf{Y} = A\mathbf{X}$, then $\text{Cov}(\mathbf{Y}) = A \cdot \text{Cov}(\mathbf{X}) \cdot A^T$.
+
+### Trick 9: Independence Checking
+
+Check if joint PDF/PMF factorizes: $f_{X,Y}(x,y) = g(x) \cdot h(y)$.
+
+### Trick 10: Cumulant Additivity
+
+For sums of independent RVs, cumulants add: $\kappa_n(X + Y) = \kappa_n(X) + \kappa_n(Y)$.
+
+## Interview Problem Types
+
+### Type 1: Computing Moments from Distribution
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| PMF or PDF of X | $E[X]$, $\text{Var}(X)$, or higher moments | Use $E[X^n] = \sum x^n p(x)$ or $\int x^n f(x) dx$, then $\text{Var}(X) = E[X^2] - (E[X])^2$ |
+
+### Type 2: MGF Applications
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| MGF $M_X(t)$ or need to find moments | Moments or identify distribution | Take derivatives: $E[X^n] = M_X^{(n)}(0)$, or match known MGF forms |
+
+### Type 3: Transformations of Random Variables
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Distribution of X, transformation $Y = g(X)$ | Distribution of Y | Use CDF method or Jacobian; for monotonic $g$: $f_Y(y) = f_X(x) \|dx/dy\|$ |
+
+### Type 4: Joint Distribution Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Joint PDF/PMF of $(X,Y)$ | Marginals, conditionals, or $P((X,Y) \in A)$ | Integrate/sum out variables for marginals; use $f_{X\|Y}(x\|y) = f_{X,Y}(x,y)/f_Y(y)$ |
+
+### Type 5: Covariance and Correlation
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Joint distribution or moments | $\text{Cov}(X,Y)$ or $\rho(X,Y)$ | Use $\text{Cov}(X,Y) = E[XY] - E[X]E[Y]$, then $\rho = \text{Cov}/(\sigma_X \sigma_Y)$ |
+
+### Type 6: Independence Testing
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Joint distribution | Whether X and Y are independent | Check if $f_{X,Y}(x,y) = f_X(x) \cdot f_Y(y)$ or if $\text{Cov}(X,Y) = 0$ for normal |
+
+### Type 7: Multivariate Normal Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Mean vector $\boldsymbol{\mu}$ and covariance matrix $\Sigma$ | Marginals, conditionals, or linear transformations | Use normal properties; marginals/conditionals are normal; $A\mathbf{X} + \mathbf{b}$ is normal |
+
+### Type 8: Order Statistics
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Distribution of i.i.d. $X_1, ..., X_n$ | Distribution of $X_{(k)}$ (min, max, median) | Use order statistic formulas with $F(x)$ and $f(x)$ |
+
+### Type 9: Cumulant Calculations
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| MGF or distribution | Cumulants $\kappa_n$ | Use $K_X(t) = \ln M_X(t)$, then $\kappa_n = K_X^{(n)}(0)$ |
+
+### Type 10: Convolution Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Independent X and Y, need distribution of $Z = X + Y$ | PDF/PMF of Z | Use convolution: $f_Z(z) = \int f_X(x)f_Y(z-x)dx$ or MGF: $M_Z(t) = M_X(t)M_Y(t)$ |
+
+## Common Pitfalls
+
+### Pitfall 1: Confusing $E[XY]$ with $E[X]E[Y]$
+
+**Wrong**: Assuming $E[XY] = E[X]E[Y]$ when X and Y are dependent
+
+**Check**: This only holds when X and Y are independent
+
+### Pitfall 2: Forgetting Jacobian in Transformations
+
+**Wrong**: Using $f_Y(y) = f_X(g^{-1}(y))$ without the derivative term
+
+**Correct**: $f_Y(y) = f_X(x) |dx/dy|$ where $x = g^{-1}(y)$
+
+### Pitfall 3: Uncorrelated ≠ Independent
+
+**Wrong**: Assuming $\text{Cov}(X,Y) = 0$ implies independence
+
+**Correct**: Independence implies uncorrelated, but not vice versa (except for normal)
+
+### Pitfall 4: PDF Values > 1
+
+**Wrong**: Thinking PDF must be ≤ 1
+
+**Correct**: PDF can exceed 1 (but integrates to 1); it's $P(X = x) = 0$ that holds
+
+### Pitfall 5: Wrong Variance Formula for Sums
+
+**Wrong**: $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)$ when X and Y are dependent
+
+**Correct**: $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X,Y)$
+
+### Pitfall 6: Marginal ≠ Conditional
+
+**Wrong**: Confusing $f_X(x)$ with $f_{X|Y}(x|y)$
+
+**Check**: Marginal integrates over all Y; conditional fixes Y
+
+### Pitfall 7: MGF Doesn't Always Exist
+
+**Wrong**: Assuming every distribution has an MGF
+
+**Example**: Cauchy distribution has no MGF (but has characteristic function)
+
+## Quick Reference: Key Formulas
+
+**Variance**:
+
+$$\text{Var}(X) = E[X^2] - (E[X])^2$$
+
+**Covariance**:
+
+$$\text{Cov}(X,Y) = E[XY] - E[X]E[Y]$$
+
+**Correlation**:
+
+$$\rho(X,Y) = \frac{\text{Cov}(X,Y)}{\sigma_X \sigma_Y}$$
+
+**MGF**:
+
+$$M_X(t) = E[e^{tX}], \quad E[X^n] = M_X^{(n)}(0)$$
+
+**Cumulant generating function**:
+
+$$K_X(t) = \ln M_X(t), \quad \kappa_n = K_X^{(n)}(0)$$
+
+**Transformation (monotonic)**:
+
+$$f_Y(y) = f_X(g^{-1}(y)) \left|\frac{dx}{dy}\right|$$
+
+**Convolution**:
+
+$$f_{X+Y}(z) = \int_{-\infty}^{\infty} f_X(x) f_Y(z-x) \, dx$$
+
+**Multivariate normal MGF**:
+
+$$M_{\mathbf{X}}(\mathbf{t}) = \exp\left(\boldsymbol{\mu}^T\mathbf{t} + \frac{1}{2}\mathbf{t}^T\Sigma\mathbf{t}\right)$$
+
+**Law of total variance**:
+
+$$\text{Var}(X) = E[\text{Var}(X|Y)] + \text{Var}(E[X|Y])$$
+
+## Practice Problem Categories
+
+- Variance calculations
+- MGF identification and manipulation
+- Characteristic functions
+- Transformation of variables
+- Jacobian determinants
+- Order statistics
+- Bivariate normal
+- Covariance matrices
+- Linear transformations
+- Convolutions
+- Skewness and kurtosis
+- Cumulant calculations
+- Conditional distributions
+- Sum of independent RVs
+- Mixture distributions
+- Copulas
+- Moment inequalities (Markov, Chebyshev)
+- Probability integral transform
+

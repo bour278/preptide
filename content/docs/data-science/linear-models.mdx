@@ -1,0 +1,364 @@
+---
+title: Linear Models
+description: "Linear Regression, OLS, Regularization (Ridge/Lasso), and Evaluation Metrics"
+---
+
+# Linear Models
+
+## Ordinary Least Squares (OLS)
+Finds the line (hyperplane) that minimizes the sum of squared vertical differences (residuals) between observed and predicted values.
+
+**Model**: $y = X\beta + \epsilon$
+where $X \in \mathbb{R}^{n \times p}$, $\beta \in \mathbb{R}^p$, $\epsilon \sim \mathcal{N}(0, \sigma^2 I)$.
+
+**Objective**:
+$$\min_\beta \|y - X\beta\|_2^2 = \min_\beta (y - X\beta)^T (y - X\beta)$$
+
+**Derivation**:
+$$\frac{\partial}{\partial \beta} (y^T y - 2\beta^T X^T y + \beta^T X^T X \beta) = -2X^T y + 2X^T X \beta = 0$$
+
+**Solution (Normal Equation)**:
+$$\hat{\beta} = (X^T X)^{-1} X^T y$$
+
+**Geometric Interpretation**: $\hat{y} = X\hat{\beta}$ is orthogonal projection of $y$ onto column space of $X$.
+
+**Assumptions**:
+1.  **Linearity**: True relationship is linear.
+2.  **Independence**: Errors are independent.
+3.  **Homoscedasticity**: Constant variance $\text{Var}(\epsilon_i) = \sigma^2$.
+4.  **Normality**: $\epsilon \sim \mathcal{N}(0, \sigma^2)$ (for inference).
+5.  **No multicollinearity**: Columns of $X$ are linearly independent.
+
+### Properties of OLS Estimator
+
+**Unbiasedness**: $E[\hat{\beta}] = \beta$.
+
+**Variance**: $\text{Var}(\hat{\beta}) = \sigma^2 (X^T X)^{-1}$.
+
+**Gauss-Markov Theorem**: Under assumptions 1-3, OLS is BLUE (Best Linear Unbiased Estimator) - has minimum variance among all linear unbiased estimators.
+
+**Residuals**: $e = y - \hat{y} = y - X\hat{\beta}$.
+
+**Residual Sum of Squares (RSS)**:
+$$\text{RSS} = \|e\|^2 = \|y - X\hat{\beta}\|^2$$
+
+**Unbiased Estimator of $\sigma^2$**:
+$$\hat{\sigma}^2 = \frac{\text{RSS}}{n - p}$$
+
+where $n-p$ is degrees of freedom.
+
+### Statistical Inference for OLS
+
+**Sampling Distribution** (under normality assumption):
+$$\hat{\beta} \sim \mathcal{N}(\beta, \sigma^2 (X^T X)^{-1})$$
+
+**t-statistic** for $H_0: \beta_j = 0$:
+$$t_j = \frac{\hat{\beta}_j}{\text{SE}(\hat{\beta}_j)} = \frac{\hat{\beta}_j}{\hat{\sigma} \sqrt{[(X^T X)^{-1}]_{jj}}}$$
+
+Follows $t_{n-p}$ distribution under $H_0$.
+
+**F-statistic** for overall significance $H_0: \beta_1 = \cdots = \beta_p = 0$:
+$$F = \frac{(\text{TSS} - \text{RSS})/p}{\text{RSS}/(n-p-1)}$$
+
+Follows $F_{p, n-p-1}$ distribution under $H_0$.
+
+**Confidence Interval** for $\beta_j$ ($(1-\alpha)$ level):
+$$\hat{\beta}_j \pm t_{n-p, \alpha/2} \cdot \text{SE}(\hat{\beta}_j)$$
+
+### Weighted Least Squares (WLS)
+When errors have non-constant variance: $\text{Var}(\epsilon_i) = \sigma^2 / w_i$.
+
+**Objective**:
+$$\min_\beta \sum_{i=1}^n w_i (y_i - x_i^T \beta)^2$$
+
+**Solution**:
+$$\hat{\beta}_{WLS} = (X^T W X)^{-1} X^T W y$$
+
+where $W = \text{diag}(w_1, \ldots, w_n)$.
+
+### Generalized Least Squares (GLS)
+When errors have arbitrary covariance structure: $\text{Var}(\epsilon) = \sigma^2 \Omega$.
+
+**Solution**:
+$$\hat{\beta}_{GLS} = (X^T \Omega^{-1} X)^{-1} X^T \Omega^{-1} y$$
+
+**Theorem**: GLS is BLUE when errors are heteroscedastic/correlated.
+
+## Regularization
+
+### 1. Ridge Regression (L2 Regularization)
+Adds L2 penalty to OLS to handle multicollinearity and prevent overfitting. Corresponds to Gaussian Prior on $\beta$ in Bayesian framework.
+
+**Objective**:
+$$\min_\beta \|y - X\beta\|_2^2 + \lambda \|\beta\|_2^2$$
+
+**Solution**:
+$$\hat{\beta}_{ridge} = (X^T X + \lambda I)^{-1} X^T y$$
+
+**Properties**:
+-   **Shrinkage**: Coefficients shrink toward zero (but never exactly zero).
+-   **Bias-Variance Tradeoff**: Increases bias, decreases variance.
+-   **Multicollinearity**: Stabilizes estimates when $X^T X$ is ill-conditioned.
+-   **$\lambda \to 0$**: Approaches OLS.
+-   **$\lambda \to \infty$**: $\beta \to 0$.
+
+**Choosing $\lambda$**: Cross-validation, GCV (Generalized Cross-Validation).
+
+### 2. Lasso Regression (L1 Regularization)
+Adds L1 penalty. Performs variable selection (sets some coefficients exactly to zero).
+
+**Objective**:
+$$\min_\beta \|y - X\beta\|_2^2 + \lambda \|\beta\|_1$$
+
+No closed-form solution. Solved via:
+-   **Coordinate Descent**: Update one coefficient at a time.
+-   **LARS (Least Angle Regression)**: Efficient path algorithm.
+-   **Proximal Gradient (ISTA/FISTA)**: Iterative soft-thresholding.
+
+**Soft-Thresholding Operator**:
+$$S_\lambda(x) = \text{sign}(x) \max(|x| - \lambda, 0)$$
+
+**Properties**:
+-   **Sparsity**: Some $\hat{\beta}_j = 0$ (automatic feature selection).
+-   **Convex**: Efficient to solve.
+-   Corresponds to Laplace Prior on $\beta$.
+
+### 3. Elastic Net
+Combines L1 and L2 penalties.
+
+**Objective**:
+$$\min_\beta \|y - X\beta\|_2^2 + \lambda_1 \|\beta\|_1 + \lambda_2 \|\beta\|_2^2$$
+
+or equivalently:
+$$\min_\beta \|y - X\beta\|_2^2 + \lambda \left( \alpha \|\beta\|_1 + \frac{1-\alpha}{2} \|\beta\|_2^2 \right)$$
+
+**Advantages**:
+-   Handles correlated predictors better than Lasso.
+-   Performs grouping (selects groups of correlated variables).
+-   $\alpha = 1$: Lasso. $\alpha = 0$: Ridge.
+
+### 4. Group Lasso
+Encourages sparsity at the group level.
+
+**Objective**:
+$$\min_\beta \|y - X\beta\|_2^2 + \lambda \sum_{g=1}^G \sqrt{|g|} \|\beta_g\|_2$$
+
+where $\beta_g$ are coefficients in group $g$.
+
+## Bayesian Linear Regression
+Probabilistic approach where we place a prior on the weights $\beta$ and compute the full posterior distribution $P(\beta | y, X)$ instead of a point estimate.
+
+**Model**:
+$$y = X\beta + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma^2 I)$$
+
+**Likelihood**:
+$$P(y | X, \beta, \sigma^2) = \mathcal{N}(X\beta, \sigma^2 I)$$
+
+**Prior** (Conjugate Gaussian):
+$$P(\beta) = \mathcal{N}(0, \tau^2 I)$$
+
+**Posterior**:
+Since Gaussian prior is conjugate to Gaussian likelihood, the posterior is also Gaussian:
+$$P(\beta | y, X, \sigma^2) \sim \mathcal{N}(\mu_n, \Sigma_n)$$
+
+**Mean and Variance**:
+$$\Sigma_n = (\tau^{-2} I + \sigma^{-2} X^T X)^{-1}$$
+$$\mu_n = \sigma^{-2} \Sigma_n X^T y$$
+
+**Interpretation**:
+-   **Mean**: Equivalent to Ridge Regression estimate (MAP) with $\lambda = \sigma^2 / \tau^2$.
+-   **Variance**: Captures uncertainty in weights.
+
+**Predictive Distribution**:
+For new input $x_{new}$:
+$$P(y_{new} | x_{new}, X, y) = \int P(y_{new} | x_{new}, \beta) P(\beta | X, y) d\beta$$
+
+This yields a Gaussian:
+$$y_{new} \sim \mathcal{N}(x_{new}^T \mu_n, \sigma^2 + x_{new}^T \Sigma_n x_{new})$$
+
+**Variance Decomposition**:
+-   $\sigma^2$: Irreducible (aleatoric) uncertainty.
+-   $x_{new}^T \Sigma_n x_{new}$: Model (epistemic) uncertainty.
+
+## Model Selection and Diagnostics
+
+### 1. Coefficient of Determination ($R^2$)
+Proportion of variance in dependent variable explained by the model.
+
+$$R^2 = 1 - \frac{SS_{res}}{SS_{tot}} = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}$$
+
+-   $SS_{res} = \|y - \hat{y}\|^2$ (Residual Sum of Squares)
+-   $SS_{tot} = \|y - \bar{y}\|^2$ (Total Sum of Squares)
+
+Range: $(-\infty, 1]$. $R^2 = 1$ is perfect fit.
+
+**Interpretation**: $R^2 = 0.7$ means 70% of variance is explained by model.
+
+**Issue**: $R^2$ always increases with more features (even if irrelevant).
+
+### 2. Adjusted $R^2$
+Penalizes model complexity.
+
+$$R_{adj}^2 = 1 - \frac{SS_{res}/(n-p-1)}{SS_{tot}/(n-1)}$$
+
+Can decrease when adding irrelevant features.
+
+### 3. Akaike Information Criterion (AIC)
+Information-theoretic model selection criterion.
+
+$$AIC = 2k - 2\ln(\hat{L})$$
+
+where $k$ is number of parameters, $\hat{L}$ is maximized likelihood.
+
+For linear regression (Gaussian errors):
+$$AIC = n \ln\left(\frac{RSS}{n}\right) + 2p$$
+
+**Lower is better**. Penalizes complexity.
+
+### 4. Bayesian Information Criterion (BIC)
+Similar to AIC but stronger penalty.
+
+$$BIC = k \ln(n) - 2\ln(\hat{L})$$
+
+For linear regression:
+$$BIC = n \ln\left(\frac{RSS}{n}\right) + p \ln(n)$$
+
+BIC tends to select simpler models than AIC.
+
+### 5. Cross-Validation
+Estimate generalization error by splitting data.
+
+**k-Fold CV**:
+1.  Split data into $k$ folds.
+2.  Train on $k-1$ folds, validate on remaining fold.
+3.  Repeat for all $k$ folds.
+4.  Average error.
+
+**Leave-One-Out CV (LOOCV)**: $k = n$. Expensive but low bias.
+
+**CV Score**:
+$$CV = \frac{1}{k} \sum_{i=1}^k \text{Error}_i$$
+
+### 6. Residual Analysis
+
+**Residual Plot**: Plot $e_i$ vs $\hat{y}_i$. Should show no pattern (random scatter).
+
+**Normal Q-Q Plot**: Check normality of residuals.
+
+**Leverage**: $h_{ii} = [X(X^T X)^{-1} X^T]_{ii}$. High leverage points have unusual $x$ values.
+
+**Cook's Distance**: Measures influence of each observation.
+$$D_i = \frac{e_i^2}{p \hat{\sigma}^2} \cdot \frac{h_{ii}}{(1-h_{ii})^2}$$
+
+Large $D_i$ (typically $> 1$) indicates influential point.
+
+**VIF (Variance Inflation Factor)**: Detects multicollinearity.
+$$VIF_j = \frac{1}{1 - R_j^2}$$
+where $R_j^2$ is $R^2$ from regressing $X_j$ on other predictors. $VIF > 10$ suggests multicollinearity.
+
+## Advanced Topics
+
+### 1. Principal Component Regression (PCR)
+Perform PCA on $X$, then regress $y$ on principal components.
+
+**Steps**:
+1.  Compute PCA: $X = U \Sigma V^T$.
+2.  Project: $Z = XV$ (PC scores).
+3.  Regress: $y = Z\theta + \epsilon$.
+4.  Back-transform: $\hat{\beta} = V\hat{\theta}$.
+
+**Advantage**: Handles multicollinearity. Uses only top PCs (dimensionality reduction).
+
+### 2. Partial Least Squares (PLS)
+Like PCR but finds directions that maximize covariance with $y$ (supervised).
+
+**Advantage**: Often better than PCR when $p >> n$.
+
+### 3. Quantile Regression
+Estimates conditional quantiles instead of conditional mean.
+
+**Objective** (for $\tau$-th quantile):
+$$\min_\beta \sum_{i=1}^n \rho_\tau(y_i - x_i^T \beta)$$
+
+where $\rho_\tau(u) = u(\tau - \mathbb{1}_{u < 0})$ is check function.
+
+**$\tau = 0.5$**: Median regression (robust to outliers).
+
+### 4. Robust Regression
+Less sensitive to outliers.
+
+**Huber Loss**: Combines L2 (for small residuals) and L1 (for large residuals).
+$$L_\delta(e) = \begin{cases} \frac{1}{2}e^2 & |e| \leq \delta \\ \delta(|e| - \frac{1}{2}\delta) & |e| > \delta \end{cases}$$
+
+**RANSAC**: Random Sample Consensus. Iteratively fit model to random subsets, find consensus.
+
+### 5. Logistic Regression
+For binary classification $y \in \{0, 1\}$.
+
+**Model**:
+$$P(y=1 | x) = \frac{1}{1 + e^{-x^T \beta}} = \sigma(x^T \beta)$$
+
+**Log-Odds (Logit)**:
+$$\log \frac{P(y=1|x)}{P(y=0|x)} = x^T \beta$$
+
+**Loss (Negative Log-Likelihood)**:
+$$L(\beta) = -\sum_{i=1}^n [y_i \log \hat{y}_i + (1-y_i) \log(1-\hat{y}_i)]$$
+
+where $\hat{y}_i = \sigma(x_i^T \beta)$.
+
+No closed-form solution. Optimize via Newton-Raphson or IRLS (Iteratively Reweighted Least Squares).
+
+**Regularization**: L1 (Lasso) or L2 (Ridge) can be added.
+
+### 6. Multinomial Logistic Regression (Softmax Regression)
+Generalization to $K$ classes.
+
+**Model**:
+$$P(y=k | x) = \frac{e^{x^T \beta_k}}{\sum_{j=1}^K e^{x^T \beta_j}}$$
+
+**Loss (Cross-Entropy)**:
+$$L(\beta) = -\sum_{i=1}^n \sum_{k=1}^K \mathbb{1}_{y_i = k} \log P(y_i = k | x_i)$$
+
+### 7. Generalized Linear Models (GLM)
+Framework that extends linear regression to non-Gaussian responses.
+
+**Components**:
+1.  **Random Component**: $y \sim$ distribution from exponential family.
+2.  **Systematic Component**: Linear predictor $\eta = X\beta$.
+3.  **Link Function**: $g(\mu) = \eta$ where $\mu = E[y]$.
+
+**Examples**:
+-   **Linear Regression**: Identity link, Gaussian distribution.
+-   **Logistic Regression**: Logit link, Binomial distribution.
+-   **Poisson Regression**: Log link, Poisson distribution.
+
+## Evaluation Metrics
+
+### 1. Mean Squared Error (MSE)
+$$\text{MSE} = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2$$
+
+### 2. Root Mean Squared Error (RMSE)
+$$\text{RMSE} = \sqrt{\text{MSE}}$$
+
+Same units as $y$.
+
+### 3. Mean Absolute Error (MAE)
+$$\text{MAE} = \frac{1}{n} \sum_{i=1}^n |y_i - \hat{y}_i|$$
+
+More robust to outliers than MSE.
+
+### 4. F1 Score (Classification)
+Harmonic mean of Precision and Recall. Used for classification (especially imbalanced data).
+
+$$\text{Precision} = \frac{TP}{TP + FP}, \quad \text{Recall} = \frac{TP}{TP + FN}$$
+
+$$F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2TP}{2TP + FP + FN}$$
+
+### 5. ROC-AUC (Classification)
+**ROC Curve**: Plot TPR vs FPR at various thresholds.
+**AUC**: Area Under Curve. $AUC = 1$ is perfect, $AUC = 0.5$ is random.
+
+### 6. Log Loss (Classification)
+$$\text{LogLoss} = -\frac{1}{n} \sum_{i=1}^n [y_i \log \hat{y}_i + (1-y_i) \log(1-\hat{y}_i)]$$
+
+Penalizes confident wrong predictions.

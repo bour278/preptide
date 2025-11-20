@@ -1,0 +1,441 @@
+---
+title: Conditional Probability
+description: Interview prep for conditional probability, joint and marginal distributions, Bayes theorem, and independence
+---
+
+# Conditional Probability
+
+## Fundamental Concepts
+
+### Definition of Conditional Probability
+
+The probability of event A given that event B has occurred:
+
+$$P(A|B) = \frac{P(A \cap B)}{P(B)}$$
+
+where $P(B) > 0$
+
+**Intuition**: We're restricting our sample space to only cases where B occurs, then finding what fraction of those cases also have A.
+
+### The Multiplication Rule
+Rearranging the definition gives us:
+
+$$P(A \cap B) = P(A|B) \cdot P(B) = P(B|A) \cdot P(A)$$
+
+This is crucial for building probability trees and sequential events.
+
+## Joint, Marginal, and Conditional Distributions
+
+### Joint Distributions
+The **joint distribution** $P(X, Y)$ or $P(X = x, Y = y)$ gives the probability of both events occurring together.
+
+**Discrete case**: Joint PMF $p_{X,Y}(x,y) = P(X = x, Y = y)$
+
+**Continuous case**: Joint PDF $f_{X,Y}(x,y)$ where $P((X,Y) \in A) = \iint_A f_{X,Y}(x,y) \, dx \, dy$
+
+**Key property**: Must sum/integrate to 1:
+$$\sum_x \sum_y p_{X,Y}(x,y) = 1 \quad \text{or} \quad \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} f_{X,Y}(x,y) \, dx \, dy = 1$$
+
+### Marginal Distributions
+The **marginal distribution** is the distribution of one variable regardless of the other(s).
+
+**Discrete case** (marginal PMF):
+$$P(X = x) = \sum_y P(X = x, Y = y)$$
+$$P(Y = y) = \sum_x P(X = x, Y = y)$$
+
+**Continuous case** (marginal PDF):
+$$f_X(x) = \int_{-\infty}^{\infty} f_{X,Y}(x,y) \, dy$$
+$$f_Y(y) = \int_{-\infty}^{\infty} f_{X,Y}(x,y) \, dx$$
+
+**Intuition**: Sum/integrate out the variable(s) you don't care about. This is called "marginalization."
+
+**Memory trick**: Think of a contingency table—marginals are the row/column totals.
+
+### Conditional Distributions
+The **conditional distribution** gives the distribution of one variable given a specific value of another.
+
+**Discrete case**:
+$$P(X = x | Y = y) = \frac{P(X = x, Y = y)}{P(Y = y)}$$
+
+**Continuous case**:
+$$f_{X|Y}(x|y) = \frac{f_{X,Y}(x,y)}{f_Y(y)}$$
+
+**Key insight**: The conditional distribution is itself a valid probability distribution (sums/integrates to 1).
+
+## Essential Identities and Formulas
+
+### The Fundamental Relationship
+
+**Key Formula:**
+
+$$\text{Joint} = \text{Conditional} \times \text{Marginal}$$
+
+$$P(X, Y) = P(X|Y) \cdot P(Y) = P(Y|X) \cdot P(X)$$
+
+$$f_{X,Y}(x,y) = f_{X|Y}(x|y) \cdot f_Y(y) = f_{Y|X}(y|x) \cdot f_X(x)$$
+
+This is the most important formula—it connects all three types of distributions.
+
+### Bayes' Theorem (Distribution Form)
+$$P(X|Y) = \frac{P(Y|X) \cdot P(X)}{P(Y)}$$
+
+For continuous variables:
+$$f_{X|Y}(x|y) = \frac{f_{Y|X}(y|x) \cdot f_X(x)}{f_Y(y)}$$
+
+**Extended form** with law of total probability:
+$$f_{X|Y}(x|y) = \frac{f_{Y|X}(y|x) \cdot f_X(x)}{\int_{-\infty}^{\infty} f_{Y|X}(y|x') \cdot f_X(x') \, dx'}$$
+
+### Law of Total Probability (Continuous)
+$$f_Y(y) = \int_{-\infty}^{\infty} f_{Y|X}(y|x) \cdot f_X(x) \, dx$$
+
+**Discrete version**:
+$$P(Y = y) = \sum_x P(Y = y | X = x) \cdot P(X = x)$$
+
+**When to use**: Computing marginals from conditionals, or finding normalizing constants.
+
+### Independence
+X and Y are independent if and only if:
+
+$$P(X, Y) = P(X) \cdot P(Y) \quad \text{for all } x, y$$
+
+Equivalently:
+- $P(X|Y) = P(X)$ (conditioning doesn't matter)
+- $f_{X,Y}(x,y) = f_X(x) \cdot f_Y(y)$
+- The joint "factorizes" into the product of marginals
+
+## Marginal Distribution Tricks and Properties
+
+### Trick 1: Sum/Integrate Out Variables
+**Problem**: Given joint distribution, find marginal.
+
+**Solution**: Sum (discrete) or integrate (continuous) over all values of the other variable(s).
+
+**Example**: For joint PMF table, marginal is the row/column sum.
+
+### Trick 2: Reverse via Conditional × Marginal
+**Problem**: Given conditionals and one marginal, find joint or other marginal.
+
+**Solution**: Use $P(X,Y) = P(X|Y) \cdot P(Y)$ then marginalize.
+
+**Example**: 
+- Given: $P(Y|X)$ and $P(X)$
+- Find: $P(Y)$
+- Method: $P(Y) = \sum_x P(Y|X=x) \cdot P(X=x)$ (law of total probability)
+
+### Trick 3: Marginal of a Function
+If $Z = g(X, Y)$, finding the marginal distribution of Z:
+
+$$P(Z = z) = P(g(X,Y) = z) = \sum_{(x,y): g(x,y)=z} P(X=x, Y=y)$$
+
+**Continuous**: Use transformation techniques or integration over level sets.
+
+### Trick 4: Symmetry in Marginals
+If the joint distribution is symmetric in X and Y, then:
+$$f_X(x) = f_Y(x)$$
+
+**Example**: If $(X,Y)$ is uniformly distributed on a circle, both marginals are identical.
+
+### Trick 5: Marginal Expectations
+$$E[X] = \int_{-\infty}^{\infty} x \cdot f_X(x) \, dx = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} x \cdot f_{X,Y}(x,y) \, dy \, dx$$
+
+**Shortcut**: You can compute $E[X]$ from the joint distribution without explicitly finding the marginal first.
+
+$$E[X] = E[E[X|Y]]$$ (law of iterated expectations)
+
+### Trick 6: Indicator Functions for Marginals
+For complex regions in the joint distribution:
+
+$$f_X(x) = \int_{-\infty}^{\infty} f_{X,Y}(x,y) \cdot \mathbb{1}_{\{(x,y) \in \text{Region}\}} \, dy$$
+
+**Use case**: When the joint has support on a restricted region (e.g., $x + y < 1$).
+
+## Conditional Distribution Tricks and Properties
+
+### Trick 7: Conditional Independence
+X and Y are conditionally independent given Z if:
+
+$$P(X, Y | Z) = P(X|Z) \cdot P(Y|Z)$$
+
+Equivalently:
+$$P(X|Y,Z) = P(X|Z)$$
+
+**Intuition**: Given Z, knowing Y doesn't give additional information about X.
+
+**Common in**: Bayesian networks, hierarchical models, Markov chains.
+
+### Trick 8: Conditional Expectations
+$$E[X|Y=y] = \int_{-\infty}^{\infty} x \cdot f_{X|Y}(x|y) \, dx$$
+
+**Properties**:
+- $E[X] = E[E[X|Y]]$ (law of iterated expectations / tower property)
+- $\text{Var}(X) = E[\text{Var}(X|Y)] + \text{Var}(E[X|Y])$ (law of total variance)
+
+**Interview gold**: These properties solve many complex expectation problems.
+
+### Trick 9: Conditioning Reduces Variance
+$$\text{Var}(X|Y) \leq \text{Var}(X)$$
+
+**Intuition**: Additional information (conditioning) reduces uncertainty.
+
+### Trick 10: Bayes' Update Pattern
+In Bayesian statistics:
+- **Prior**: $P(X)$ or $f_X(x)$
+- **Likelihood**: $P(Y|X)$ or $f_{Y|X}(y|x)$
+- **Posterior**: $P(X|Y)$ or $f_{X|Y}(x|y)$
+
+$$\text{Posterior} \propto \text{Likelihood} \times \text{Prior}$$
+
+**Trick**: Often you can ignore the normalizing constant (marginal) until the end:
+
+$$f_{X|Y}(x|y) = \frac{f_{Y|X}(y|x) \cdot f_X(x)}{\text{constant w.r.t. } x}$$
+
+Find the constant by ensuring the posterior integrates to 1.
+
+## Common Joint Distribution Patterns
+
+### Pattern 1: Uniform on a Region
+If $(X,Y)$ is uniform on region $R$ with area $A$:
+
+$$f_{X,Y}(x,y) = \frac{1}{A} \cdot \mathbb{1}_{(x,y) \in R}$$
+
+**Marginal strategy**: 
+$$f_X(x) = \int_{y: (x,y) \in R} \frac{1}{A} \, dy = \frac{\text{length of slice at } x}{A}$$
+
+### Pattern 2: Product Form (Independence)
+$$f_{X,Y}(x,y) = g(x) \cdot h(y)$$
+
+**Immediate insight**: X and Y are independent!
+
+**Marginals**: 
+$$f_X(x) = g(x) \cdot \int h(y) \, dy = C \cdot g(x)$$
+
+Normalize if needed.
+
+### Pattern 3: Conditional Structure
+$$f_{X,Y}(x,y) = f_Y(y) \cdot f_{X|Y}(x|y)$$
+
+**Use when**: One variable clearly "comes first" (hierarchical structure).
+
+**Example**: $Y \sim \text{Exponential}(\lambda)$, then $X|Y \sim \text{Normal}(Y, 1)$
+
+### Pattern 4: Mixture Distributions
+$$f_X(x) = \sum_{i=1}^{k} \pi_i \cdot f_i(x)$$
+
+where $\pi_i$ are mixing weights with $\sum \pi_i = 1$.
+
+**Interpretation**: X comes from one of k distributions with probability $\pi_i$.
+
+**Connection to marginals**: This IS the law of total probability in distribution form.
+
+## Quick Reference: Essential Equalities
+
+### Converting Between Distributions
+
+1. **Joint → Marginal**: 
+   
+   $$f_X(x) = \int f_{X,Y}(x,y) \, dy$$
+
+2. **Joint → Conditional**: 
+   
+   $$f_{X|Y}(x|y) = \frac{f_{X,Y}(x,y)}{f_Y(y)}$$
+
+3. **Conditional + Marginal → Joint**: 
+   
+   $$f_{X,Y}(x,y) = f_{X|Y}(x|y) \cdot f_Y(y)$$
+
+4. **Conditional + Marginal → Other Marginal**: 
+   
+   $$f_Y(y) = \int f_{Y|X}(y|x) \cdot f_X(x) \, dx$$
+
+5. **Reverse Conditional (Bayes)**: 
+   
+   $$f_{Y|X}(y|x) = \frac{f_{X|Y}(x|y) \cdot f_Y(y)}{f_X(x)}$$
+
+### Expectation Identities
+
+1. **Marginal expectation from joint**:
+   
+   $$E[X] = \iint x \cdot f_{X,Y}(x,y) \, dx \, dy$$
+
+2. **Law of iterated expectations**:
+   
+   $$E[X] = E[E[X|Y]]$$
+
+3. **Conditional expectation as function**:
+   
+   $$E[X|Y] \text{ is a function of } Y: g(Y)$$
+   
+4. **Law of total variance**:
+   
+   $$\text{Var}(X) = E[\text{Var}(X|Y)] + \text{Var}(E[X|Y])$$
+
+5. **Conditional variance**:
+   
+   $$\text{Var}(X|Y=y) = E[X^2|Y=y] - (E[X|Y=y])^2$$
+
+## Problem-Solving Strategies
+
+### Strategy 1: Draw the Dependency Graph
+Identify which variables depend on which:
+- Arrows show conditional dependence
+- Helps identify which conditionals you know
+- Guides application of chain rule
+
+### Strategy 2: Fill in a Contingency Table
+For discrete distributions with few values:
+1. Create table with rows/columns for each variable's values
+2. Fill in what you know (joint, marginal, or conditional)
+3. Use row/column sums for marginals
+4. Use division for conditionals
+
+### Strategy 3: Identify the Question Type
+- **Have joint, want marginal**: Integrate/sum out
+- **Have conditionals + one marginal, want joint**: Multiply
+- **Have conditionals + one marginal, want other marginal**: Law of total probability
+- **Want to reverse conditioning**: Bayes' theorem
+
+### Strategy 4: Look for Factorization
+Can you write $f_{X,Y}(x,y) = g(x) \cdot h(y)$?
+- If yes: Independent! Marginals are easy.
+- If no: Need full marginalization.
+
+### Strategy 5: Use Symmetry
+- Is the joint symmetric in the variables?
+- Are there symmetries in the support region?
+- Can you swap variables to make the problem easier?
+
+## Interview Problem Types
+
+### Type 1: Contingency Table Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Joint distribution in table form | Marginals, conditionals, independence check | Row/column sums for marginals, division for conditionals |
+
+### Type 2: Uniform on Region
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| $(X,Y)$ uniform on geometric region | Marginal distribution of X or Y | "Slice" the region, find length/area of slices |
+
+### Type 3: Hierarchical Models
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| $X \sim f_X(x)$, then $Y\|X \sim f_{Y\|X}(y\|x)$ | Marginal $f_Y(y)$ or joint $f_{X,Y}(x,y)$ | Use $f_{X,Y}(x,y) = f_{Y\|X}(y\|x) \cdot f_X(x)$, then marginalize if needed |
+
+### Type 4: Order Statistics
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| $X_1, ..., X_n$ i.i.d., let $X_{(1)} \leq ... \leq X_{(n)}$ be order statistics | Distribution of $X_{(k)}$ or joint of $(X_{(i)}, X_{(j)})$ | Use joint density of order statistics, marginalize carefully |
+
+### Type 5: Transformation of Variables
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Joint distribution of $(X,Y)$, transformation $(U,V) = g(X,Y)$ | Joint distribution of $(U,V)$ or marginal of $U$ | Jacobian transformation, then marginalize if needed |
+
+### Type 6: Bayesian Inference
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Prior $f_X(x)$, likelihood $f_{Y\|X}(y\|x)$, observed data $Y=y_0$ | Posterior $f_{X\|Y}(x\|y_0)$ | Bayes' theorem, often can ignore normalizing constant |
+
+## Common Pitfalls
+
+### Pitfall 1: Confusing Joint and Conditional
+**Wrong**: Using $P(X,Y)$ when you mean $P(X|Y)$
+
+**Check**: Does the formula involve division by a marginal?
+
+### Pitfall 2: Forgetting to Marginalize
+**Wrong**: Treating a joint distribution as a marginal
+
+**Check**: Do you have extra variables you need to integrate/sum out?
+
+### Pitfall 3: Independence Assumption
+**Wrong**: Assuming $f_{X,Y}(x,y) = f_X(x) \cdot f_Y(y)$ without checking
+
+**Check**: Does the joint factorize? Does $P(X|Y) = P(X)$?
+
+### Pitfall 4: Wrong Order in Conditional
+**Wrong**: Computing $P(X|Y)$ when you need $P(Y|X)$
+
+**Fix**: Use Bayes' theorem to reverse
+
+### Pitfall 5: Ignoring Support/Domain
+**Wrong**: Integrating over wrong limits
+
+**Check**: What values can $(x,y)$ actually take? Are there constraints?
+
+## Additional Helpful Tricks
+
+### The Complement Trick
+Often easier to calculate the probability of "not happening":
+
+$$P(A|B) = 1 - P(A^c|B)$$
+
+**Example**: "At least one success" problems are easier as $1 - P(\text{all failures})$
+
+### Symmetry Arguments
+Look for symmetry in problems to simplify calculations.
+
+**Example**: In a random shuffle, any specific position is equally likely to contain any specific card.
+
+### Conditioning on the First Step
+For sequential processes, condition on what happens first:
+
+$$P(A) = P(A|\text{first step}_1) \cdot P(\text{first step}_1) + P(A|\text{first step}_2) \cdot P(\text{first step}_2)$$
+
+### The "False Positive" Framework
+For diagnostic/testing problems:
+- **Sensitivity**: $P(\text{positive test}|\text{disease})$
+- **Specificity**: $P(\text{negative test}|\text{no disease})$
+- **Goal**: Usually find $P(\text{disease}|\text{positive test})$ using Bayes' Theorem
+
+### Probability Trees
+Draw a tree for sequential events:
+- Each branch represents a conditional probability
+- Multiply along branches for joint probabilities
+- Add across branches for total probabilities
+
+## Common Mistakes to Avoid
+
+### The Prosecutor's Fallacy
+**Wrong**: Confusing $P(A|B)$ with $P(B|A)$
+
+**Example**: $P(\text{match}|\text{innocent}) = 0.001$ does NOT mean $P(\text{innocent}|\text{match}) = 0.001$
+
+### Assuming Independence
+**Wrong**: Assuming events are independent when they're not
+
+**Check**: Does knowing B occurred change the probability of A? If yes, they're dependent.
+
+### Ignoring Base Rates
+**Wrong**: Neglecting $P(A)$ when using Bayes' Theorem
+
+**Example**: Rare diseases remain unlikely even with positive tests if the base rate is very low.
+
+## Quick Reference: Chain Rule
+
+**Chain Rule**: 
+$$P(A_1 \cap A_2 \cap ... \cap A_n) = P(A_1) \cdot P(A_2|A_1) \cdot P(A_3|A_1 \cap A_2) \cdots$$
+
+**Partition Formula**: For any events A and B:
+$$P(A) = P(A|B) \cdot P(B) + P(A|B^c) \cdot P(B^c)$$
+
+**Conditional Complement**: 
+$$P(A^c|B) = 1 - P(A|B)$$
+
+## Practice Problem Categories
+
+- Balls and urns
+- Disease testing
+- Game shows (Monty Hall)
+- Card/dice problems
+- Random walks
+- Matching problems
+- Uniform on triangular/circular regions
+- Hierarchical/mixture models
+

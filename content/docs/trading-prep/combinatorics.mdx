@@ -1,0 +1,630 @@
+---
+title: Combinatorics
+description: Interview prep for combinatorics including permutations, combinations, Catalan numbers, and advanced counting techniques
+---
+
+# Combinatorics
+
+## Fundamental Concepts
+
+### Basic Counting Principles
+
+**Addition Principle**: If there are $n$ ways to do task A and $m$ ways to do task B, and these tasks are mutually exclusive, then there are $n + m$ ways to do either task A or task B.
+
+**Multiplication Principle**: If there are $n$ ways to do task A and $m$ ways to do task B, then there are $n \times m$ ways to do both tasks in sequence.
+
+**Subtraction Principle**: If there are $n$ ways to do a task without restrictions and $m$ ways that violate certain restrictions, then there are $n - m$ ways to do the task satisfying the restrictions.
+
+**Division Principle**: If there are $n$ ways to perform a task, but each outcome is counted $k$ times due to symmetry, then there are $\frac{n}{k}$ distinct outcomes.
+
+### Permutations
+
+**Permutations of n distinct objects**:
+
+$$P(n) = n!$$
+
+**Permutations of r objects from n distinct objects** (order matters):
+
+$$P(n, r) = \frac{n!}{(n-r)!} = n(n-1)(n-2)\cdots(n-r+1)$$
+
+**Permutations with repetition**: Arranging $n$ objects where there are $n_1$ of type 1, $n_2$ of type 2, ..., $n_k$ of type k:
+
+$$\frac{n!}{n_1! \cdot n_2! \cdots n_k!}$$
+
+### Combinations
+
+**Combinations of r objects from n** (order doesn't matter):
+
+$$C(n, r) = \binom{n}{r} = \frac{n!}{r!(n-r)!}$$
+
+**Properties**:
+- $\binom{n}{r} = \binom{n}{n-r}$ (symmetry)
+- $\binom{n}{r} = \binom{n-1}{r-1} + \binom{n-1}{r}$ (Pascal's identity)
+- $\sum_{r=0}^{n} \binom{n}{r} = 2^n$ (sum of binomial coefficients)
+- $\binom{n}{0} = \binom{n}{n} = 1$
+
+### Stars and Bars
+
+**Problem**: Distribute $n$ identical objects into $k$ distinct bins.
+
+**Non-negative integers** (bins can be empty):
+
+$$\binom{n+k-1}{k-1} = \binom{n+k-1}{n}$$
+
+**Positive integers** (each bin must have at least one):
+
+$$\binom{n-1}{k-1}$$
+
+**Intuition**: Stars represent objects, bars separate bins. For $n$ stars and $k-1$ bars, choose positions for the bars.
+
+## Essential Identities and Formulas
+
+### Binomial Theorem
+
+$$(x + y)^n = \sum_{k=0}^{n} \binom{n}{k} x^{n-k} y^k$$
+
+**Special cases**:
+- $(1 + x)^n = \sum_{k=0}^{n} \binom{n}{k} x^k$
+- $(1 + 1)^n = 2^n = \sum_{k=0}^{n} \binom{n}{k}$
+- $(1 - 1)^n = 0 = \sum_{k=0}^{n} (-1)^k \binom{n}{k}$ (for $n > 0$)
+
+### Multinomial Theorem
+
+$$(x_1 + x_2 + \cdots + x_k)^n = \sum \binom{n}{n_1, n_2, \ldots, n_k} x_1^{n_1} x_2^{n_2} \cdots x_k^{n_k}$$
+
+where the sum is over all non-negative integers $n_1 + n_2 + \cdots + n_k = n$, and:
+
+$$\binom{n}{n_1, n_2, \ldots, n_k} = \frac{n!}{n_1! n_2! \cdots n_k!}$$
+
+### Vandermonde's Identity
+
+$$\binom{m+n}{r} = \sum_{k=0}^{r} \binom{m}{k} \binom{n}{r-k}$$
+
+**Interpretation**: Choosing $r$ objects from two groups of sizes $m$ and $n$.
+
+### Hockey Stick Identity
+
+$$\sum_{i=r}^{n} \binom{i}{r} = \binom{n+1}{r+1}$$
+
+**Interpretation**: Sum of diagonal entries in Pascal's triangle.
+
+## The 12-Fold Way
+
+Counting the number of ways to place $n$ balls into $k$ bins:
+
+| Balls | Bins | Any arrangement | Injective (≤1 per bin) | Surjective (≥1 per bin) |
+|-------|------|-----------------|------------------------|-------------------------|
+| **Distinguishable** | **Distinguishable** | $k^n$ | $k^{\underline{n}} = \frac{k!}{(k-n)!}$ | $k! \cdot S(n,k)$ |
+| **Indistinguishable** | **Distinguishable** | $\binom{n+k-1}{k-1}$ | $\binom{k}{n}$ | $\binom{n-1}{k-1}$ |
+| **Distinguishable** | **Indistinguishable** | $\sum_{j=1}^{k} S(n,j)$ | $1$ if $n \leq k$, else $0$ | $S(n,k)$ |
+| **Indistinguishable** | **Indistinguishable** | $p(n,k)$ | $1$ if $n \leq k$, else $0$ | $p(n,k)$ |
+
+**Notation**:
+- $k^{\underline{n}}$ is the falling factorial: $k(k-1)(k-2)\cdots(k-n+1)$
+- $S(n,k)$ is the Stirling number of the second kind (partitions of $n$ into $k$ non-empty subsets)
+- $p(n,k)$ is the partition function (partitions of $n$ into at most $k$ parts)
+
+### Stirling Numbers of the Second Kind
+
+Number of ways to partition $n$ objects into $k$ non-empty subsets:
+
+$$S(n,k) = \frac{1}{k!} \sum_{j=0}^{k} (-1)^{k-j} \binom{k}{j} j^n$$
+
+**Recurrence**:
+
+$$S(n,k) = k \cdot S(n-1,k) + S(n-1,k-1)$$
+
+**Boundary conditions**: $S(n,0) = 0$ for $n > 0$, $S(0,0) = 1$, $S(n,n) = 1$
+
+## Catalan Numbers
+
+### Definition
+
+The $n$-th Catalan number is:
+
+$$C_n = \frac{1}{n+1} \binom{2n}{n} = \frac{(2n)!}{(n+1)! \cdot n!}$$
+
+**First few values**: $C_0 = 1, C_1 = 1, C_2 = 2, C_3 = 5, C_4 = 14, C_5 = 42, ...$
+
+**Recurrence relation**:
+
+$$C_n = \sum_{i=0}^{n-1} C_i C_{n-1-i}$$
+
+with $C_0 = 1$.
+
+**Generating function**:
+
+$$G(x) = \sum_{n=0}^{\infty} C_n x^n = \frac{1 - \sqrt{1-4x}}{2x}$$
+
+### Applications of Catalan Numbers
+
+1. **Number of valid parenthesizations** of $n$ pairs of parentheses
+2. **Number of binary trees** with $n$ internal nodes
+3. **Number of ways to triangulate** a convex $(n+2)$-gon
+4. **Number of monotonic lattice paths** from $(0,0)$ to $(n,n)$ that don't cross the diagonal (Dyck paths)
+5. **Number of ways to connect** $2n$ points on a circle with $n$ non-crossing chords
+6. **Number of permutations** of $[n]$ that avoid the pattern $123$ (or any pattern of length 3)
+
+## Dyck Paths and Lattice Path Counting
+
+### Dyck Paths
+
+A **Dyck path** is a lattice path from $(0,0)$ to $(n,n)$ using steps $(1,0)$ (right) and $(0,1)$ (up) that never goes above the diagonal $y = x$.
+
+**Count**: The number of Dyck paths from $(0,0)$ to $(n,n)$ is $C_n$ (the $n$-th Catalan number).
+
+**Proof technique**: Reflection principle (cycle lemma).
+
+### General Lattice Path Counting
+
+**Problem**: Count paths from $(0,0)$ to $(m,n)$ using right $(1,0)$ and up $(0,1)$ steps.
+
+**Answer**: 
+
+$$\binom{m+n}{m} = \binom{m+n}{n}$$
+
+**Intuition**: Total steps = $m + n$, choose which $m$ are "right" (or which $n$ are "up").
+
+### Lattice Paths with Barriers
+
+**Problem**: Count paths from $(0,0)$ to $(m,n)$ that don't touch or cross a barrier.
+
+**Technique**: **Reflection principle** (also called the **ballot problem** or **cycle lemma**).
+
+**Example**: Paths from $(0,0)$ to $(n,n)$ that stay strictly below the diagonal:
+
+$$\frac{1}{n+1}\binom{2n}{n} = C_n$$
+
+### Ballot Problem
+
+In an election, candidate A receives $a$ votes and candidate B receives $b$ votes, with $a > b$. The number of ways the ballots can be ordered such that A is always ahead is:
+
+$$\frac{a - b}{a + b} \binom{a+b}{a}$$
+
+## Inclusion-Exclusion Principle
+
+### General Formula
+
+For events $A_1, A_2, ..., A_n$:
+
+$$\left| \bigcup_{i=1}^{n} A_i \right| = \sum_{i} |A_i| - \sum_{i<j} |A_i \cap A_j| + \sum_{i<j<k} |A_i \cap A_j \cap A_k| - \cdots + (-1)^{n-1} |A_1 \cap A_2 \cap \cdots \cap A_n|$$
+
+**Compact form**:
+
+$$\left| \bigcup_{i=1}^{n} A_i \right| = \sum_{\emptyset \neq S \subseteq [n]} (-1)^{|S|+1} \left| \bigcap_{i \in S} A_i \right|$$
+
+### Derangements
+
+A **derangement** is a permutation where no element appears in its original position.
+
+**Number of derangements** of $n$ objects:
+
+$$D_n = n! \sum_{k=0}^{n} \frac{(-1)^k}{k!} = n! \left( \frac{1}{0!} - \frac{1}{1!} + \frac{1}{2!} - \frac{1}{3!} + \cdots + \frac{(-1)^n}{n!} \right)$$
+
+**Approximation**: $D_n \approx \frac{n!}{e}$
+
+**Recurrence**:
+
+$$D_n = (n-1)(D_{n-1} + D_{n-2})$$
+
+with $D_0 = 1, D_1 = 0$.
+
+**Probability**: The probability that a random permutation is a derangement approaches $1/e \approx 0.368$ as $n \to \infty$.
+
+## Burnside's Lemma (Pólya Enumeration)
+
+### Burnside's Lemma
+
+**Problem**: Count distinct objects under group symmetries.
+
+**Formula**: Let $G$ be a group acting on a set $X$. The number of distinct objects (orbits) is:
+
+$$|X/G| = \frac{1}{|G|} \sum_{g \in G} |X^g|$$
+
+where $X^g$ is the set of elements fixed by symmetry $g$.
+
+**Intuition**: Average number of elements fixed by each symmetry.
+
+### Common Applications
+
+**Necklace problem**: Count distinct necklaces with $n$ beads and $k$ colors, considering rotations and reflections as equivalent.
+
+**Cube coloring**: Count ways to color the faces of a cube with $k$ colors, considering rotational symmetries.
+
+**Steps**:
+1. Identify the symmetry group $G$
+2. For each symmetry $g$, count how many configurations are fixed by $g$
+3. Apply Burnside's lemma
+
+### Example: Rotating a Square
+
+For a square with $4$ positions and $k$ colors:
+- Identity: $k^4$ configurations fixed
+- $90°$ rotation: $k$ configurations fixed (all same color in each "orbit")
+- $180°$ rotation: $k^2$ configurations fixed
+- $270°$ rotation: $k$ configurations fixed
+
+**Total distinct configurations**:
+
+$$\frac{1}{4}(k^4 + k + k^2 + k) = \frac{k^4 + 2k + k^2}{4}$$
+
+## Grid Path Counting
+
+### Basic Grid Paths
+
+**From $(0,0)$ to $(m,n)$** using right and up steps:
+
+$$\binom{m+n}{m}$$
+
+### Paths Avoiding Obstacles
+
+**Technique**: Inclusion-exclusion or dynamic programming.
+
+**Single obstacle at $(a,b)$**: 
+
+$$\binom{m+n}{m} - \binom{a+b}{a} \cdot \binom{(m-a)+(n-b)}{m-a}$$
+
+### Paths on a Grid with Boundaries
+
+**Rectangle with barrier**: Use reflection principle.
+
+**Cycle lemma / André's reflection**: For paths from $(0,0)$ to $(n,n)$ that stay weakly below $y = x$: $C_n$
+
+### Diagonal Paths
+
+**Paths using diagonal steps**: If diagonal $(1,1)$ is allowed along with $(1,0)$ and $(0,1)$:
+
+Count using generating functions or recurrence relations based on last step.
+
+## Counting on Strings
+
+### Binary Strings
+
+**Binary strings of length $n$**: $2^n$
+
+**Binary strings with exactly $k$ ones**: $\binom{n}{k}$
+
+**Binary strings avoiding pattern**: Use recurrence relations or generating functions.
+
+### Avoiding Consecutive Patterns
+
+**Binary strings of length $n$ with no two consecutive 1s**:
+
+$$F_{n+2}$$
+
+where $F_n$ is the $n$-th Fibonacci number.
+
+**Recurrence**: $a_n = a_{n-1} + a_{n-2}$ with $a_1 = 2, a_2 = 3$.
+
+### Strings with Forbidden Substrings
+
+**Technique**: Inclusion-exclusion or automata/dynamic programming.
+
+**Example**: Strings of length $n$ over alphabet $\Sigma$ avoiding substring $s$:
+- Build a DFA/automaton that accepts strings containing $s$
+- Use DP or transfer matrix method to count
+
+## Domino Tilings
+
+### Tiling a $2 \times n$ Board
+
+**Problem**: Count ways to tile a $2 \times n$ board with $1 \times 2$ dominoes.
+
+**Answer**: $F_{n+1}$ (Fibonacci number)
+
+**Recurrence**: $T_n = T_{n-1} + T_{n-2}$ with $T_0 = 1, T_1 = 1$.
+
+**Intuition**: Last column is either a vertical domino or two horizontal dominoes.
+
+### Tiling an $m \times n$ Board
+
+For general $m \times n$ boards:
+- Use **transfer matrix method**
+- For small $m$, recurrence relations work
+- For large boards, use advanced techniques (e.g., Kasteleyn's theorem for exact formula)
+
+### Aztec Diamond
+
+The **Aztec diamond** of order $n$ has exactly $2^{n(n+1)/2}$ domino tilings.
+
+## Generating Functions
+
+### Ordinary Generating Functions (OGF)
+
+For sequence $a_0, a_1, a_2, ...$:
+
+$$A(x) = \sum_{n=0}^{\infty} a_n x^n$$
+
+**Operations**:
+- Addition: $(A + B)(x) = A(x) + B(x)$
+- Multiplication: $(A \cdot B)(x) = A(x) \cdot B(x)$ gives convolution
+- Shift: $x A(x)$ shifts sequence by one
+
+**Common OGFs**:
+- $\frac{1}{1-x} = 1 + x + x^2 + \cdots$ (geometric series)
+- $\frac{1}{(1-x)^k} = \sum_{n=0}^{\infty} \binom{n+k-1}{k-1} x^n$ (stars and bars)
+- $(1+x)^n = \sum_{k=0}^{n} \binom{n}{k} x^k$ (binomial)
+
+### Exponential Generating Functions (EGF)
+
+For sequence $a_0, a_1, a_2, ...$:
+
+$$A(x) = \sum_{n=0}^{\infty} a_n \frac{x^n}{n!}$$
+
+**Use case**: When order matters (permutations rather than combinations).
+
+**Example**: Number of permutations of $n$ objects:
+
+$$e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!}$$
+
+corresponds to $a_n = n!$.
+
+## Advanced Counting Techniques
+
+### Recurrence Relations
+
+**Linear recurrence**: $a_n = c_1 a_{n-1} + c_2 a_{n-2} + \cdots + c_k a_{n-k}$
+
+**Solution technique**:
+1. Find characteristic equation: $x^k = c_1 x^{k-1} + c_2 x^{k-2} + \cdots + c_k$
+2. Solve for roots
+3. General solution is linear combination of $r_i^n$ for each root $r_i$
+
+**Example (Fibonacci)**: $F_n = F_{n-1} + F_{n-2}$ has characteristic equation $x^2 = x + 1$, giving:
+
+$$F_n = \frac{\phi^n - \psi^n}{\sqrt{5}}$$
+
+where $\phi = \frac{1+\sqrt{5}}{2}$ and $\psi = \frac{1-\sqrt{5}}{2}$.
+
+### Bijective Proofs
+
+**Technique**: Establish a one-to-one correspondence between two sets to show they have the same size.
+
+**Example**: $\binom{n}{k} = \binom{n}{n-k}$ by mapping a subset $S$ to its complement $\bar{S}$.
+
+### Double Counting
+
+**Technique**: Count the same quantity in two different ways to establish an identity.
+
+**Example**: Handshaking lemma: $\sum_{v} \deg(v) = 2|E|$
+
+## Pigeonhole Principle
+
+### Basic Pigeonhole Principle
+
+If $n$ pigeons are placed in $k$ holes and $n > k$, then at least one hole contains more than one pigeon.
+
+**Generalized**: If $n$ objects are placed in $k$ bins, at least one bin contains at least $\lceil n/k \rceil$ objects.
+
+### Applications
+
+- Ramsey theory (finding structure in large sets)
+- Proving existence of patterns
+- Subset sum problems
+
+**Example**: Among any $n+1$ integers, there exist two whose difference is divisible by $n$.
+
+## Common Combinatorial Tricks
+
+### Trick 1: Complementary Counting
+
+Count the complement and subtract:
+
+$$\text{Count}(A) = \text{Total} - \text{Count}(\bar{A})$$
+
+**When to use**: When the complement is easier to count.
+
+### Trick 2: Bijection Construction
+
+Establish a one-to-one mapping between two sets.
+
+**Example**: Counting Dyck paths ↔ valid parenthesizations.
+
+### Trick 3: Stars and Bars
+
+Convert distribution problems to choosing positions for dividers.
+
+**When to use**: Distributing identical objects into distinct bins.
+
+### Trick 4: Recursive Decomposition
+
+Break problem into smaller subproblems based on choices.
+
+**Example**: Catalan numbers—split based on where the first matching parenthesis closes.
+
+### Trick 5: Generating Function Manipulation
+
+Encode the problem as a generating function and use algebra.
+
+**When to use**: Recurrences, convolutions, coefficient extraction.
+
+### Trick 6: Symmetry Arguments
+
+Use symmetry to reduce cases or simplify counting.
+
+**Example**: Rotating/reflecting objects, choosing $k$ from $n$ vs. choosing $n-k$ from $n$.
+
+### Trick 7: Inclusion-Exclusion
+
+Add and subtract overlapping sets to avoid double-counting.
+
+**When to use**: At-least-one problems, derangements, forbidden configurations.
+
+### Trick 8: Reflection Principle
+
+Reflect "bad" paths across a boundary to count them.
+
+**When to use**: Lattice paths with barriers, ballot problems.
+
+### Trick 9: DP State Compression
+
+For grid/path problems, track only necessary state.
+
+**Example**: Domino tilings—track configuration of last column.
+
+### Trick 10: Cycle Index (Pólya Theory)
+
+Extend Burnside's lemma with cycle structure.
+
+**When to use**: Advanced symmetry problems, weighted counting.
+
+## Interview Problem Types
+
+### Type 1: Basic Counting (Permutations/Combinations)
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Selection or arrangement of distinct objects | Number of ways | Use $\binom{n}{r}$ for selection, $P(n,r)$ for arrangement |
+
+### Type 2: Stars and Bars Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Distributing identical objects into distinct bins | Number of distributions | Use $\binom{n+k-1}{k-1}$ (bins can be empty) or $\binom{n-1}{k-1}$ (bins non-empty) |
+
+### Type 3: Lattice Path Counting
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Grid paths from $(0,0)$ to $(m,n)$ with constraints | Number of valid paths | Use $\binom{m+n}{m}$ baseline, reflection principle for barriers |
+
+### Type 4: Catalan Number Applications
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Parenthesizations, Dyck paths, binary trees, triangulations | Count of valid structures | Recognize Catalan pattern: $C_n = \frac{1}{n+1}\binom{2n}{n}$ |
+
+### Type 5: Inclusion-Exclusion Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Count with forbidden overlaps (derangements, at-least-one) | Objects satisfying constraints | Use $\|\bigcup A_i\| = \sum \|A_i\| - \sum \|A_i \cap A_j\| + \cdots$ |
+
+### Type 6: String Counting with Constraints
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Strings over alphabet avoiding patterns | Number of valid strings | Recurrence relation, DP, or generating functions |
+
+### Type 7: Symmetry and Burnside's Lemma
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Count distinct objects under symmetries (rotations/reflections) | Number of equivalence classes | Apply Burnside: $\frac{1}{\|G\|} \sum_{g \in G} \|X^g\|$ |
+
+### Type 8: Tiling and Domino Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Tiling boards with dominoes or polyominoes | Number of tilings | Recurrence relations (often Fibonacci-like), transfer matrices |
+
+### Type 9: Stirling Numbers and Partitions
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Partition $n$ objects into $k$ groups, distribute balls into bins | Count under 12-fold way | Use Stirling $S(n,k)$ or partition function $p(n,k)$ |
+
+### Type 10: Generating Function Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Recurrence or sequence with generating function | Closed form or $n$-th term | Set up OGF/EGF, manipulate algebraically, extract coefficients |
+
+## Common Pitfalls
+
+### Pitfall 1: Confusing Permutations and Combinations
+
+**Wrong**: Using $\binom{n}{r}$ when order matters
+
+**Check**: Does rearranging the selection give a different outcome?
+
+### Pitfall 2: Forgetting the Division Principle
+
+**Wrong**: Overcounting symmetric configurations
+
+**Example**: Circular arrangements—divide by $n$ for rotations
+
+### Pitfall 3: Misapplying Stars and Bars
+
+**Wrong**: Using wrong formula for "at least one in each bin"
+
+**Check**: Empty bins allowed? Use $\binom{n+k-1}{k-1}$. Non-empty? Use $\binom{n-1}{k-1}$
+
+### Pitfall 4: Off-by-One Errors in Paths
+
+**Wrong**: Miscounting steps or boundary conditions
+
+**Check**: Verify small cases, ensure start and end points are correct
+
+### Pitfall 5: Incorrect Inclusion-Exclusion
+
+**Wrong**: Missing terms or wrong signs in inclusion-exclusion
+
+**Check**: Alternating signs, all subsets included
+
+### Pitfall 6: Not Recognizing Catalan Patterns
+
+**Wrong**: Solving from scratch when pattern is Catalan
+
+**Check**: Does problem involve balanced/nested structures, non-crossing partitions, or Dyck paths?
+
+## Quick Reference: Key Formulas
+
+**Permutations**:
+
+$$P(n,r) = \frac{n!}{(n-r)!}$$
+
+**Combinations**:
+
+$$\binom{n}{r} = \frac{n!}{r!(n-r)!}$$
+
+**Stars and Bars**:
+
+$$\binom{n+k-1}{k-1} \quad \text{(bins can be empty)}$$
+
+$$\binom{n-1}{k-1} \quad \text{(bins must be non-empty)}$$
+
+**Catalan Numbers**:
+
+$$C_n = \frac{1}{n+1}\binom{2n}{n}$$
+
+**Derangements**:
+
+$$D_n = n! \sum_{k=0}^{n} \frac{(-1)^k}{k!} \approx \frac{n!}{e}$$
+
+**Grid Paths**:
+
+$$\binom{m+n}{m} \quad \text{from } (0,0) \text{ to } (m,n)$$
+
+**Burnside's Lemma**:
+
+$$|X/G| = \frac{1}{|G|} \sum_{g \in G} |X^g|$$
+
+**Fibonacci Recurrence**:
+
+$$F_n = F_{n-1} + F_{n-2}, \quad F_0 = 0, F_1 = 1$$
+
+**Stirling Numbers (2nd kind)**:
+
+$$S(n,k) = k \cdot S(n-1,k) + S(n-1,k-1)$$
+
+## Practice Problem Categories
+
+- Combinations with repetition
+- Circular permutations
+- Multinomial coefficients
+- Partitions of integers
+- Bell numbers
+- Fibonacci variants
+- Pascal's triangle identities
+- Binomial coefficient identities
+- Lattice paths with multiple barriers
+- Non-crossing partitions
+- Parking functions
+- Young tableaux
+- Plane partitions
+- Schröder numbers
+- Motzkin numbers
+- Graph coloring under symmetry
+- Necklace and bracelet problems
+

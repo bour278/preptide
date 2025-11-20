@@ -1,0 +1,337 @@
+---
+title: Optimization
+description: "Mathematical optimization techniques: Gradient Descent, Lagrange Multipliers, ADMM"
+---
+
+# Optimization
+
+## First-Order Methods
+
+### 1. Gradient Descent
+Iterative optimization algorithm for finding a local minimum of a differentiable function.
+
+**Objective**: $\min_w J(w)$
+
+**Update Rule**:
+$$w_{t+1} = w_t - \eta \nabla J(w_t)$$
+
+where $\eta$ is the learning rate.
+
+**Convergence** (for convex $J$ with L-Lipschitz gradient):
+$$J(w_t) - J(w^*) \leq \frac{L \|w_0 - w^*\|^2}{2t}$$
+
+### 2. Stochastic Gradient Descent (SGD)
+Update using single sample (or mini-batch). High variance, faster per step.
+
+**Update**:
+$$w_{t+1} = w_t - \eta \nabla J_i(w_t)$$
+
+where $i$ is randomly selected.
+
+**Mini-Batch SGD**:
+$$w_{t+1} = w_t - \eta \frac{1}{B} \sum_{i \in \mathcal{B}} \nabla J_i(w_t)$$
+
+where $\mathcal{B}$ is a random batch of size $B$.
+
+**Advantages**: Faster, can escape local minima, handles large datasets.
+**Disadvantages**: Noisy updates, requires learning rate tuning.
+
+### 3. Momentum
+Accumulate past gradients to dampen oscillations and accelerate convergence.
+
+**Update**:
+$$v_{t+1} = \gamma v_t + \eta \nabla J(w_t)$$
+$$w_{t+1} = w_t - v_{t+1}$$
+
+Typical $\gamma = 0.9$. Velocity $v$ accumulates gradient history.
+
+**Nesterov Accelerated Gradient (NAG)**:
+Look ahead before computing gradient:
+$$v_{t+1} = \gamma v_t + \eta \nabla J(w_t - \gamma v_t)$$
+$$w_{t+1} = w_t - v_{t+1}$$
+
+### 4. AdaGrad
+Adaptive learning rate for each parameter based on past gradients.
+
+**Update**:
+$$g_t = \nabla J(w_t)$$
+$$G_t = G_{t-1} + g_t \odot g_t \quad \text{(element-wise)}$$
+$$w_{t+1} = w_t - \frac{\eta}{\sqrt{G_t + \epsilon}} \odot g_t$$
+
+**Pros**: Good for sparse data.
+**Cons**: Learning rate decays too aggressively (vanishing).
+
+### 5. RMSProp
+Addresses AdaGrad's learning rate decay issue using exponential moving average.
+
+**Update**:
+$$E[g^2]_t = \beta E[g^2]_{t-1} + (1-\beta) g_t^2$$
+$$w_{t+1} = w_t - \frac{\eta}{\sqrt{E[g^2]_t + \epsilon}} g_t$$
+
+Typical $\beta = 0.9$.
+
+### 6. Adam (Adaptive Moment Estimation)
+Combines momentum and RMSProp. Most popular optimizer in deep learning.
+
+**Update**:
+$$m_t = \beta_1 m_{t-1} + (1-\beta_1) g_t \quad \text{(first moment, momentum)}$$
+$$v_t = \beta_2 v_{t-1} + (1-\beta_2) g_t^2 \quad \text{(second moment, RMSProp)}$$
+
+**Bias Correction**:
+$$\hat{m}_t = \frac{m_t}{1 - \beta_1^t}, \quad \hat{v}_t = \frac{v_t}{1 - \beta_2^t}$$
+
+$$w_{t+1} = w_t - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t$$
+
+Typical: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$.
+
+**Variants**: AdaMax, Nadam, AMSGrad.
+
+```python
+def adam(grad_fn, w_init, lr=0.001, beta1=0.9, beta2=0.999, eps=1e-8, steps=1000):
+    w = w_init
+    m = np.zeros_like(w)
+    v = np.zeros_like(w)
+    
+    for t in range(1, steps+1):
+        g = grad_fn(w)
+        m = beta1 * m + (1 - beta1) * g
+        v = beta2 * v + (1 - beta2) * (g ** 2)
+        
+        m_hat = m / (1 - beta1 ** t)
+        v_hat = v / (1 - beta2 ** t)
+        
+        w = w - lr * m_hat / (np.sqrt(v_hat) + eps)
+    
+    return w
+```
+
+## Second-Order Methods
+
+### 1. Newton's Method
+Uses second-order (Hessian) information for faster convergence.
+
+**Update**:
+$$w_{t+1} = w_t - H^{-1} \nabla J(w_t)$$
+
+where $H = \nabla^2 J(w_t)$ is the Hessian matrix.
+
+**Convergence**: Quadratic near minimum (very fast).
+**Drawback**: Computing and inverting Hessian is $O(n^3)$.
+
+### 2. Quasi-Newton Methods (BFGS, L-BFGS)
+Approximate Hessian inverse using gradient information.
+
+**BFGS Update**:
+$$B_{t+1} = B_t + \frac{y_t y_t^T}{y_t^T s_t} - \frac{B_t s_t s_t^T B_t}{s_t^T B_t s_t}$$
+
+where $s_t = w_{t+1} - w_t$, $y_t = \nabla J(w_{t+1}) - \nabla J(w_t)$.
+
+**L-BFGS**: Limited-memory version. Stores only a few vectors instead of full matrix. Good for high dimensions.
+
+### 3. Conjugate Gradient
+Iterative method that uses conjugate directions instead of steepest descent.
+
+**Update**:
+$$w_{t+1} = w_t + \alpha_t d_t$$
+
+where $d_t = -\nabla J(w_t) + \beta_t d_{t-1}$ (search direction).
+
+**Variants**: Fletcher-Reeves, Polak-Ribière.
+
+## Constrained Optimization
+
+### 1. Lagrange Multipliers
+Strategy for finding local maxima/minima of a function subject to equality constraints.
+
+**Problem**:
+Minimize $f(x)$ subject to $g(x) = 0$.
+
+**Lagrangian**:
+$$\mathcal{L}(x, \lambda) = f(x) + \lambda g(x)$$
+
+**KKT Conditions** (Karush-Kuhn-Tucker):
+Solve $\nabla \mathcal{L} = 0$:
+1.  $\nabla_x \mathcal{L} = \nabla f(x) + \lambda \nabla g(x) = 0$ (Stationarity)
+2.  $g(x) = 0$ (Primal Feasibility)
+
+**Example**: Maximize $f(x, y) = xy$ subject to $x^2 + y^2 = 1$.
+$$\mathcal{L} = xy + \lambda(x^2 + y^2 - 1)$$
+Solution: $x = y = \pm \frac{1}{\sqrt{2}}$.
+
+### 2. KKT Conditions (Inequality Constraints)
+For inequality constraints $g_i(x) \leq 0$, $h_j(x) = 0$.
+
+**Lagrangian**:
+$$\mathcal{L}(x, \mu, \lambda) = f(x) + \sum_i \mu_i g_i(x) + \sum_j \lambda_j h_j(x)$$
+
+**Conditions**:
+1.  **Stationarity**: $\nabla_x \mathcal{L} = 0$
+2.  **Primal Feasibility**: $g_i(x) \leq 0$, $h_j(x) = 0$
+3.  **Dual Feasibility**: $\mu_i \geq 0$
+4.  **Complementary Slackness**: $\mu_i g_i(x) = 0$
+
+### 3. Penalty Methods
+Convert constrained problem to unconstrained by adding penalty term.
+
+**Quadratic Penalty**:
+$$\min_x f(x) + \frac{\rho}{2} \sum_i \max(0, g_i(x))^2$$
+
+Increase $\rho$ over iterations.
+
+### 4. Augmented Lagrangian Method
+Combines Lagrange multipliers and penalty methods.
+
+$$\mathcal{L}_{\rho}(x, \lambda) = f(x) + \lambda^T g(x) + \frac{\rho}{2} \|g(x)\|^2$$
+
+**Advantage**: Finite $\rho$ suffices for convergence (unlike pure penalty).
+
+## Convex Optimization
+
+### 1. Convex Functions
+$f$ is convex if for all $x, y$ and $\theta \in [0, 1]$:
+$$f(\theta x + (1-\theta) y) \leq \theta f(x) + (1-\theta) f(y)$$
+
+**Properties**:
+-   Any local minimum is global minimum.
+-   First-order condition: $f(y) \geq f(x) + \nabla f(x)^T (y - x)$.
+-   Second-order condition: Hessian $\nabla^2 f(x) \succeq 0$ (positive semidefinite).
+
+### 2. Subgradients
+Generalization of gradients for non-differentiable convex functions.
+
+$g$ is a subgradient of $f$ at $x$ if:
+$$f(y) \geq f(x) + g^T(y - x) \quad \forall y$$
+
+**Example**: For $f(x) = |x|$, subgradient at $x=0$ is any $g \in [-1, 1]$.
+
+**Subgradient Method**:
+$$w_{t+1} = w_t - \eta_t g_t$$
+where $g_t \in \partial f(w_t)$ (any subgradient).
+
+### 3. Proximal Gradient Methods
+For $f(x) = g(x) + h(x)$ where $g$ is smooth, $h$ is non-smooth but has simple prox operator.
+
+**Proximal Operator**:
+$$\text{prox}_h(x) = \arg\min_z \left( h(z) + \frac{1}{2}\|z - x\|^2 \right)$$
+
+**ISTA (Iterative Shrinkage-Thresholding Algorithm)**:
+$$w_{t+1} = \text{prox}_{\eta h}(w_t - \eta \nabla g(w_t))$$
+
+**FISTA**: Accelerated version with Nesterov momentum.
+
+**Example**: Lasso regression $h(w) = \lambda \|w\|_1$ has soft-thresholding prox.
+
+### 4. Coordinate Descent
+Optimize one coordinate at a time, cycling through all coordinates.
+
+**Update**:
+$$w_i^{(t+1)} = \arg\min_{w_i} f(w_1^{(t+1)}, \ldots, w_{i-1}^{(t+1)}, w_i, w_{i+1}^{(t)}, \ldots)$$
+
+**Use**: Lasso, SVM, Matrix Factorization.
+
+## Distributed and Parallel Optimization
+
+### 1. ADMM (Alternating Direction Method of Multipliers)
+Algorithm that solves convex optimization problems by breaking them into smaller pieces. Combines benefits of Dual Decomposition and Augmented Lagrangian methods.
+
+**Problem**:
+$$\min_{x, z} f(x) + g(z) \quad \text{s.t. } Ax + Bz = c$$
+
+**Augmented Lagrangian**:
+$$\mathcal{L}_\rho(x, z, y) = f(x) + g(z) + y^T(Ax + Bz - c) + \frac{\rho}{2} \|Ax + Bz - c\|_2^2$$
+
+**Updates**:
+1.  **x-update**: $x^{k+1} := \arg\min_x \mathcal{L}_\rho(x, z^k, y^k)$
+2.  **z-update**: $z^{k+1} := \arg\min_z \mathcal{L}_\rho(x^{k+1}, z, y^k)$
+3.  **y-update (Dual)**: $y^{k+1} := y^k + \rho(Ax^{k+1} + Bz^{k+1} - c)$
+
+**Applications**: Lasso, Robust PCA, Distributed Optimization, Consensus problems.
+
+**Convergence**: Guaranteed for convex $f$, $g$.
+
+### 2. Hogwild! (Asynchronous SGD)
+Parallel SGD without locks. Multiple threads update parameters asynchronously.
+
+**Surprisingly**: Works well when gradients are sparse (most updates don't conflict).
+
+### 3. Parameter Server
+Distributed architecture: Workers compute gradients, servers aggregate and update parameters.
+
+## Non-Convex Optimization
+
+### 1. Simulated Annealing
+Probabilistic technique inspired by annealing in metallurgy.
+
+**Accept worse solutions** with probability $\exp(-\Delta E / T)$ where $T$ decreases over time (temperature).
+
+Allows escaping local minima.
+
+### 2. Genetic Algorithms
+Evolutionary approach: Population of solutions, select fittest, crossover, mutate, repeat.
+
+### 3. Particle Swarm Optimization
+Population of candidate solutions (particles) move in search space influenced by their own best position and global best.
+
+### 4. Trust Region Methods
+Define a region where model is trusted. Optimize model within region. Expand/shrink region based on agreement.
+
+## Line Search
+
+### 1. Backtracking Line Search
+Choose step size $\alpha$ satisfying Armijo condition:
+$$f(x + \alpha d) \leq f(x) + c \alpha \nabla f(x)^T d$$
+
+where $c \in (0, 1)$ (typically 0.1-0.3).
+
+**Algorithm**: Start with $\alpha = 1$, decrease by factor $\beta < 1$ until condition satisfied.
+
+### 2. Wolfe Conditions
+Stronger than Armijo. Additionally requires:
+$$\nabla f(x + \alpha d)^T d \geq c_2 \nabla f(x)^T d$$
+
+where $c_2 \in (c_1, 1)$ (curvature condition).
+
+## Special Topics
+
+### 1. Frank-Wolfe Algorithm (Conditional Gradient)
+For constrained problems with simple linear optimization oracle.
+
+**Update**:
+$$s_t = \arg\min_{s \in \mathcal{D}} \nabla f(x_t)^T s$$
+$$x_{t+1} = (1-\gamma_t) x_t + \gamma_t s_t$$
+
+**Advantage**: Maintains feasibility, projection-free.
+
+### 2. Mirror Descent
+Generalization of gradient descent using Bregman divergence.
+
+**Update**:
+$$w_{t+1} = \arg\min_w \left( \nabla J(w_t)^T w + \frac{1}{\eta} D_\phi(w, w_t) \right)$$
+
+where $D_\phi(w, w_t) = \phi(w) - \phi(w_t) - \nabla \phi(w_t)^T(w - w_t)$ is Bregman divergence.
+
+**Choice of $\phi$**: Euclidean ($\phi(w) = \frac{1}{2}\|w\|^2$) gives standard GD. Entropy gives exponentiated gradient.
+
+### 3. Natural Gradient Descent
+Use Fisher Information Matrix as metric instead of Euclidean.
+
+**Update**:
+$$\theta_{t+1} = \theta_t - \eta I(\theta_t)^{-1} \nabla J(\theta_t)$$
+
+**Advantage**: Invariant to reparameterization.
+
+### 4. Variance Reduction (SVRG, SAGA)
+Reduce variance of SGD while maintaining per-iteration cost.
+
+**SVRG (Stochastic Variance Reduced Gradient)**:
+Periodically compute full gradient, use it to correct stochastic gradients.
+
+### 5. Hyperparameter Optimization
+
+**Grid Search**: Exhaustive search over grid of hyperparameters.
+
+**Random Search**: Sample random combinations. Often better than grid.
+
+**Bayesian Optimization**: Model objective as Gaussian Process, use acquisition function (EI, UCB) to select next point.
+
+**Hyperband**: Resource allocation strategy combining random search and early stopping.

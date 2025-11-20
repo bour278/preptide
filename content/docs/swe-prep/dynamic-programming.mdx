@@ -1,0 +1,227 @@
+---
+title: Dynamic Programming
+description: In-depth guide to Dynamic Programming including Knapsack, LCS, Double Table DP, Bitmask DP, and optimizations
+---
+
+# Dynamic Programming
+
+## Fundamental Concepts
+
+### Definition
+Dynamic Programming (DP) is an optimization technique for solving complex problems by breaking them down into simpler **subproblems**. It is applicable when a problem has two key properties:
+1.  **Optimal Substructure**: The optimal solution to the problem can be constructed from optimal solutions of its subproblems.
+2.  **Overlapping Subproblems**: The problem can be broken down into subproblems which are reused several times.
+
+### Top-Down vs Bottom-Up
+
+| Approach | Description | Pros | Cons |
+| :--- | :--- | :--- | :--- |
+| **Top-Down (Memoization)** | Recursive. Start from the main problem and recurse. Store results in a map/table to avoid recomputing. | Easier to write/intuit. Only solves necessary subproblems. | Recursion stack overhead. |
+| **Bottom-Up (Tabulation)** | Iterative. Start from smallest subproblems and build up to the main problem. | No recursion overhead. Easier space optimization. | Solves all subproblems even if not needed. |
+
+### The Framework
+To solve any DP problem:
+1.  **Define the State**: What variables minimally describe a subproblem? (e.g., `dp[i]`, `dp[i][j]`).
+2.  **Recurrence Relation**: How do you transition from smaller states to the current state?
+3.  **Base Cases**: What are the simplest states with known values?
+4.  **Compute Order**: For tabulation, in what order should loops run?
+
+## Common Patterns & Implementations
+
+### 1. 0/1 Knapsack Problem
+**Problem**: Given weights `wt` and values `val` of $n$ items, and capacity $W$. Pick items to max value without exceeding $W$. Each item can be picked at most once.
+
+**State**: `dp[i][w]` = Max value using subset of first $i$ items with capacity $w$.
+**Transition**:
+$$dp[i][w] = \max(dp[i-1][w], \text{val}[i] + dp[i-1][w-\text{wt}[i]])$$
+**Optimization**: 1D Array. Iterate backwards to avoid using the same item twice in one step.
+
+```python
+def knapsack_01(weights, values, W):
+    # dp[w] stores max value for capacity w
+    dp = [0] * (W + 1)
+    
+    for i in range(len(values)):
+        # Iterate backwards to simulate 0/1 selection
+        for w in range(W, weights[i] - 1, -1):
+            dp[w] = max(dp[w], dp[w - weights[i]] + values[i])
+            
+    return dp[W]
+```
+
+### 2. Unbounded Knapsack (Coin Change)
+**Problem**: Same as 0/1, but items can be picked unlimited times.
+**Optimization**: Iterate forwards.
+
+```python
+def coin_change(coins, amount):
+    # dp[i] = min coins to make amount i
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    
+    for coin in coins:
+        # Iterate forwards for unbounded
+        for x in range(coin, amount + 1):
+            dp[x] = min(dp[x], dp[x - coin] + 1)
+            
+    return dp[amount] if dp[amount] != float('inf') else -1
+```
+
+### 3. Longest Common Subsequence (LCS)
+**Problem**: Longest subsequence common to string $A$ and $B$.
+**State**: `dp[i][j]` = LCS length of $A[0..i]$ and $B[0..j]$.
+**Transition**:
+-   If $A[i] == B[j]$: $1 + dp[i-1][j-1]$
+-   Else: $\max(dp[i-1][j], dp[i][j-1])$
+
+```python
+def lcs(text1, text2):
+    m, n = len(text1), len(text2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if text1[i-1] == text2[j-1]:
+                dp[i][j] = 1 + dp[i-1][j-1]
+            else:
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+    return dp[m][n]
+```
+
+### 4. Double Table DP (State Machines)
+Used when a single value isn't enough to capture the state. You typically maintain multiple arrays representing different "modes" or "states" at index $i$.
+**Example**: Stock Trading with Cooldown.
+-   `held[i]`: Max profit at day $i$ if we hold a stock.
+-   `sold[i]`: Max profit at day $i$ if we just sold.
+-   `reset[i]`: Max profit at day $i$ if we did nothing.
+
+```python
+def max_profit_cooldown(prices):
+    if not prices: return 0
+    
+    held = -float('inf')
+    sold = 0
+    reset = 0
+    
+    for price in prices:
+        prev_sold = sold
+        sold = held + price
+        held = max(held, reset - price)
+        reset = max(reset, prev_sold)
+        
+    return max(sold, reset)
+```
+
+### 5. Edit Distance (Levenshtein)
+**Problem**: Min operations (insert, delete, replace) to convert $A$ to $B$.
+**Transition**:
+$$dp[i][j] = \begin{cases} dp[i-1][j-1] & \text{if } A[i] == B[j] \\ 1 + \min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) & \text{else} \end{cases}$$
+
+## Advanced Techniques
+
+### 1. Bitmask DP
+Used for problems with small constraints ($N \le 20$) involving subsets/permutations.
+**State**: `dp[mask][last_element]`. `mask` is an integer where the $k$-th bit represents if item $k$ is used.
+**Problem**: Traveling Salesman Problem (TSP).
+**Complexity**: $O(n^2 2^n)$.
+
+```python
+def tsp(dist_matrix):
+    n = len(dist_matrix)
+    # dp[mask][i] = min cost to visit set 'mask', ending at 'i'
+    dp = [[float('inf')] * n for _ in range(1 << n)]
+    dp[1][0] = 0  # Start at node 0
+    
+    for mask in range(1, 1 << n):
+        for u in range(n):
+            if mask & (1 << u): # If u is in mask
+                prev_mask = mask ^ (1 << u)
+                if prev_mask == 0: continue
+                for v in range(n):
+                    if prev_mask & (1 << v):
+                        dp[mask][u] = min(dp[mask][u], dp[prev_mask][v] + dist_matrix[v][u])
+                        
+    # Return min cost to visit all and return to 0 (if needed)
+    final_mask = (1 << n) - 1
+    return min(dp[final_mask][i] + dist_matrix[i][0] for i in range(1, n))
+```
+
+### 2. Digit DP
+Used for counting numbers in a range $[L, R]$ satisfying property $X$.
+**Approach**: Solve for $[0, R]$ and subtract $[0, L-1]$.
+**State**: `dp[pos][tight][property_state]`.
+-   `pos`: Current digit position (left to right).
+-   `tight`: Boolean, true if we are restricted by the digits of $R$.
+-   `property_state`: e.g., sum of digits modulo $k$.
+
+### 3. Interval DP
+Used for problems involving merging adjacent elements or cuts.
+**State**: `dp[i][j]` = Optimal value for subarray $A[i..j]$.
+**Transition**: Iterate split point $k$ from $i$ to $j$.
+$$dp[i][j] = \max_k (dp[i][k] + dp[k+1][j] + \text{cost})$$
+**Example**: Matrix Chain Multiplication, Burst Balloons.
+
+## Interview Problem Types
+
+### Type 1: Grid Paths
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Grid with obstacles | Unique paths from top-left to bottom-right | `dp[i][j] = dp[i-1][j] + dp[i][j-1]`. If obstacle, 0. |
+| Grid with numbers | Path with min/max sum | `dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1])`. |
+
+### Type 2: String Transformations
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Two strings | Longest Common Subsequence | 2D DP (see implementation). |
+| Two strings | Edit Distance | 2D DP (Insert/Delete/Replace). |
+| String | Longest Palindromic Subsequence | `dp[i][j]` for range $i$ to $j$. If $S[i]==S[j]$, $2 + dp[i+1][j-1]$. |
+
+### Type 3: Subset/Knapsack
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Array of integers | Can partition into two equal sum subsets? | 0/1 Knapsack (is sum/2 achievable?). |
+| Coins and amount | Min coins | Unbounded Knapsack. |
+| Target and nums | Number of combinations | Unbounded Knapsack (Summing ways). |
+
+### Type 4: Game Theory (Minimax)
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Game with 2 players, piles of stones | Can Player 1 win? | `dp[i][j] = max(pick_left + min_next, pick_right + min_next)`. |
+
+## Common Pitfalls
+
+### Pitfall 1: Greedy vs DP
+**Wrong**: Assuming a local optimum leads to global optimum (Greedy).
+**Check**: Can I construct a counter-example where taking the "best" current item fails? If yes, use DP. Example: Coin change with coins $\{1, 3, 4\}$, target 6. Greedy ($4, 1, 1$) takes 3 coins. DP ($3, 3$) takes 2.
+
+### Pitfall 2: Off-by-One in Initialization
+**Wrong**: `dp` array size `n` instead of `n+1`.
+**Correct**: Usually need `n+1` to handle base case (e.g., length 0 string or capacity 0).
+
+### Pitfall 3: Wrong Loop Order
+**Wrong**: Looping forwards for 0/1 Knapsack with 1D array.
+**Correct**: Loop backwards for 0/1 to avoid reusing items. Loop forwards for Unbounded.
+
+### Pitfall 4: State Explosion
+**Wrong**: Including unnecessary variables in state (e.g., current sum) when constraints are large.
+**Correct**: Try to swap value and state. Instead of `dp[index][sum] = bool`, use `dp[index][value] = min_weight`.
+
+## Quick Reference
+
+-   **Fibonacci**: `dp[i] = dp[i-1] + dp[i-2]`.
+-   **Stairs**: Same as Fibonacci.
+-   **Knapsack 0/1**: Backwards loop. `dp[w] = max(dp[w], dp[w-wt] + val)`.
+-   **Unbounded**: Forwards loop.
+-   **LCS**: Diagonal dependency ($i-1, j-1$) for match, Orthogonal ($i-1, j$ or $i, j-1$) for mismatch.
+-   **LIS (Longest Increasing Subsequence)**: $O(n^2)$ DP or $O(n \log n)$ with Binary Search.
+-   **Palindrome**: `dp[i][j]` depends on `dp[i+1][j-1]`.
+
+## Practice Problem Categories
+
+-   **Linear DP**: House Robber, Decode Ways.
+-   **2D/Grid DP**: Dungeon Game, Maximal Square.
+-   **Knapsack**: Partition Equal Subset Sum, Target Sum.
+-   **String DP**: Distinct Subsequences, Interleaving String.
+-   **Interval DP**: Palindrome Partitioning, Burst Balloons.
+-   **Tree DP**: House Robber III, Diameter of Tree.
+-   **Bitmask**: Traveling Salesman, Partition to K Equal Sum Subsets.

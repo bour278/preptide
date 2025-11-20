@@ -1,0 +1,409 @@
+---
+title: Statistics & Probability
+description: "Core statistical concepts: Z-score, Correlation, MLE, MAP, and Information Theory"
+---
+
+# Statistics & Probability
+
+## Fundamental Statistics
+
+### 1. Z-score (Standardization)
+Measure of how many standard deviations a data point is from the mean.
+
+$$z = \frac{x - \mu}{\sigma}$$
+
+-   **Mean** of z-scores is 0.
+-   **Std Dev** of z-scores is 1.
+-   **Use**: Compare across different scales, detect outliers (typically $|z| > 3$).
+
+### 2. Correlation (Pearson)
+Measure of linear relationship between two variables $X$ and $Y$.
+
+$$\rho_{X,Y} = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y} = \frac{E[(X - \mu_X)(Y - \mu_Y)]}{\sigma_X \sigma_Y}$$
+
+Range: $[-1, 1]$. $\rho = 0$ means no linear relationship (but may have nonlinear).
+
+**Sample Correlation**:
+$$r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2} \sqrt{\sum (y_i - \bar{y})^2}}$$
+
+### 3. Spearman's Rank Correlation
+Non-parametric measure based on ranked values. Captures monotonic (not just linear) relationships.
+
+$$\rho_s = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}$$
+
+where $d_i$ is the difference between ranks of $x_i$ and $y_i$.
+
+### 4. Cosine Similarity
+Measure of similarity between two non-zero vectors of an inner product space.
+
+$$\text{similarity} = \cos(\theta) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\| \|\mathbf{B}\|} = \frac{\sum_{i=1}^n A_i B_i}{\sqrt{\sum_{i=1}^n A_i^2} \sqrt{\sum_{i=1}^n B_i^2}}$$
+
+Range: $[-1, 1]$. Used often in NLP and high-dimensional spaces.
+
+### 5. Covariance
+Measure of joint variability of two variables.
+
+$$\text{Cov}(X, Y) = E[(X - E[X])(Y - E[Y])] = E[XY] - E[X]E[Y]$$
+
+**Properties**:
+-   $\text{Cov}(X, X) = \text{Var}(X)$
+-   $\text{Cov}(aX, bY) = ab \cdot \text{Cov}(X, Y)$
+-   $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X, Y)$
+
+### 6. Variance and Standard Deviation
+$$\text{Var}(X) = E[(X - E[X])^2] = E[X^2] - (E[X])^2$$
+$$\sigma = \sqrt{\text{Var}(X)}$$
+
+**Sample Variance** (unbiased):
+$$s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \bar{x})^2$$
+
+### 7. Skewness
+Measure of asymmetry of the distribution.
+
+$$\gamma_1 = E\left[\left(\frac{X - \mu}{\sigma}\right)^3\right] = \frac{E[(X - \mu)^3]}{\sigma^3}$$
+
+-   $\gamma_1 = 0$: Symmetric (e.g., Normal).
+-   $\gamma_1 > 0$: Right-skewed (long tail to right).
+-   $\gamma_1 < 0$: Left-skewed (long tail to left).
+
+### 8. Kurtosis
+Measure of "tailedness" of the distribution.
+
+$$\gamma_2 = E\left[\left(\frac{X - \mu}{\sigma}\right)^4\right] - 3$$
+
+-   $\gamma_2 = 0$: Mesokurtic (Normal).
+-   $\gamma_2 > 0$: Leptokurtic (heavy tails, sharp peak).
+-   $\gamma_2 < 0$: Platykurtic (light tails, flat peak).
+
+## Statistical Inference
+
+### 1. Maximum Likelihood Estimation (MLE)
+Method to estimate parameters $\theta$ of a probability distribution by maximizing the likelihood function $L(\theta)$.
+
+$$L(\theta) = P(X | \theta) = \prod_{i=1}^n P(x_i | \theta)$$
+
+$$\hat{\theta}_{\text{MLE}} = \arg\max_{\theta} L(\theta) = \arg\max_{\theta} \sum_{i=1}^n \log P(x_i | \theta)$$
+
+**Example (Gaussian)**:
+For $x_i \sim \mathcal{N}(\mu, \sigma^2)$:
+$$\hat{\mu} = \frac{1}{n} \sum x_i, \quad \hat{\sigma}^2 = \frac{1}{n} \sum (x_i - \hat{\mu})^2$$
+
+**Properties**:
+-   **Consistency**: $\hat{\theta}_n \xrightarrow{p} \theta$ as $n \to \infty$.
+-   **Asymptotic Normality**: $\sqrt{n}(\hat{\theta}_n - \theta) \xrightarrow{d} \mathcal{N}(0, I(\theta)^{-1})$ where $I(\theta)$ is Fisher Information.
+-   **Efficiency**: Achieves Cramér-Rao Lower Bound asymptotically.
+
+### 2. Maximum A Posteriori (MAP)
+Estimate $\theta$ by maximizing the posterior distribution (incorporating a prior $P(\theta)$).
+
+$$\hat{\theta}_{\text{MAP}} = \arg\max_{\theta} P(\theta | X) = \arg\max_{\theta} \frac{P(X | \theta) P(\theta)}{P(X)}$$
+$$\hat{\theta}_{\text{MAP}} = \arg\max_{\theta} \left( \sum_{i=1}^n \log P(x_i | \theta) + \log P(\theta) \right)$$
+
+-   If prior $P(\theta)$ is uniform, MAP $\equiv$ MLE.
+-   L2 Regularization (Ridge) corresponds to Gaussian Prior.
+-   L1 Regularization (Lasso) corresponds to Laplace Prior.
+
+### 3. Conjugacy in Bayesian Inference
+A prior distribution $P(\theta)$ is **conjugate** to a likelihood function $P(X|\theta)$ if the posterior distribution $P(\theta|X)$ belongs to the same family as the prior.
+
+**Benefits**:
+-   **Closed-form solution**: Avoids expensive numerical integration (MCMC).
+-   **Interpretability**: Posterior parameters update intuitively.
+-   **Sequential updating**: Posterior from one step becomes prior for next.
+
+**Common Conjugate Pairs**:
+
+| Likelihood | Prior | Posterior |
+| :--- | :--- | :--- |
+| **Bernoulli** ($p$) | **Beta**($\alpha, \beta$) | **Beta**($\alpha + x, \beta + n - x$) |
+| **Binomial** ($p$) | **Beta**($\alpha, \beta$) | **Beta**($\alpha + x, \beta + n - x$) |
+| **Poisson** ($\lambda$) | **Gamma**($k, \theta$) | **Gamma**($k + \sum x_i, \frac{\theta}{1 + n\theta}$) |
+| **Normal** ($\mu$, known $\sigma^2$) | **Normal**($\mu_0, \sigma_0^2$) | **Normal**($\mu_{new}, \sigma_{new}^2$) |
+| **Multinomial** ($p$) | **Dirichlet**($\alpha$) | **Dirichlet**($\alpha + x$) |
+
+**Example: Beta-Bernoulli**:
+Prior $p \sim \text{Beta}(\alpha, \beta)$. Observe $x$ successes in $n$ trials.
+Posterior:
+$$P(p|X) \propto P(X|p) P(p) \propto p^x (1-p)^{n-x} \cdot p^{\alpha-1} (1-p)^{\beta-1}$$
+$$P(p|X) \propto p^{x+\alpha-1} (1-p)^{n-x+\beta-1} \implies \text{Beta}(\alpha+x, \beta+n-x)$$
+
+**Interpretation**: $\alpha$ and $\beta$ are "pseudo-counts" representing prior successes and failures.
+
+### 4. Method of Moments (MoM)
+Estimate parameters by equating sample moments to population moments.
+
+$$\hat{\theta}: \quad \frac{1}{n}\sum x_i^k = E[X^k] \text{ for } k=1,2,\ldots$$
+
+**Example (Normal)**: $\hat{\mu} = \bar{x}$, $\hat{\sigma}^2 = \frac{1}{n}\sum (x_i - \bar{x})^2$.
+
+### 5. Expectation-Maximization (EM)
+Iterative method for MLE when data has latent variables.
+
+**E-Step**: Compute $Q(\theta | \theta^{(t)}) = E_{Z|X,\theta^{(t)}}[\log P(X, Z | \theta)]$.
+
+**M-Step**: $\theta^{(t+1)} = \arg\max_{\theta} Q(\theta | \theta^{(t)})$.
+
+**Guarantee**: $\log P(X | \theta^{(t+1)}) \geq \log P(X | \theta^{(t)})$.
+
+**Applications**: Gaussian Mixture Models (GMM), Hidden Markov Models (HMM), Factor Analysis.
+
+## Hypothesis Testing
+
+### 1. Null Hypothesis Significance Testing (NHST)
+Framework for statistical hypothesis testing.
+
+-   **Null Hypothesis** $H_0$: Default assumption (e.g., no effect).
+-   **Alternative Hypothesis** $H_1$: What we want to detect.
+-   **p-value**: Probability of observing data as extreme as observed, assuming $H_0$ is true.
+-   **Significance Level** $\alpha$: Threshold (typically 0.05). Reject $H_0$ if $p < \alpha$.
+
+**Type I Error**: False Positive (Reject $H_0$ when true). $P(\text{Type I}) = \alpha$.
+**Type II Error**: False Negative (Fail to reject $H_0$ when false). $P(\text{Type II}) = \beta$.
+**Power**: $1 - \beta$ (Probability of correctly rejecting $H_0$).
+
+### 2. t-test
+Test if mean of population differs from a value (one-sample), or if two populations have different means (two-sample).
+
+**One-Sample t-statistic**:
+$$t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}$$
+where $s$ is sample standard deviation. Follows $t_{n-1}$ distribution under $H_0: \mu = \mu_0$.
+
+**Two-Sample t-test (equal variance)**:
+$$t = \frac{\bar{x}_1 - \bar{x}_2}{s_p \sqrt{\frac{1}{n_1} + \frac{1}{n_2}}}$$
+where $s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1 + n_2 - 2}$ is pooled variance.
+
+### 3. Chi-Squared Test
+Test for independence in contingency tables or goodness-of-fit.
+
+**Test Statistic**:
+$$\chi^2 = \sum_{i=1}^k \frac{(O_i - E_i)^2}{E_i}$$
+where $O_i$ is observed frequency, $E_i$ is expected frequency under $H_0$.
+
+Follows $\chi^2_{k-1}$ distribution.
+
+### 4. F-test
+Test equality of variances between two populations.
+
+$$F = \frac{s_1^2}{s_2^2}$$
+
+Follows $F_{n_1-1, n_2-1}$ distribution under $H_0: \sigma_1^2 = \sigma_2^2$.
+
+**Use in ANOVA**: Test if group means are equal.
+
+### 5. Kolmogorov-Smirnov (KS) Test
+Non-parametric test to determine if a sample comes from a reference probability distribution (One-Sample) or if two samples come from the same distribution (Two-Sample).
+
+**Statistic**: The maximum absolute difference between the empirical CDFs.
+
+$$D_n = \sup_x |F_n(x) - F(x)|$$
+
+where $F_n(x)$ is the empirical CDF and $F(x)$ is the reference CDF.
+
+### 6. Mann-Whitney U Test (Wilcoxon Rank-Sum)
+Non-parametric alternative to two-sample t-test. Tests if two samples have the same distribution.
+
+**Statistic**: Count pairs $(x_i, y_j)$ where $x_i > y_j$.
+
+### 7. Multiple Testing Correction
+
+**Bonferroni**: For $m$ tests, use significance level $\alpha/m$.
+
+**Benjamini-Hochberg (FDR)**: Controls False Discovery Rate.
+Order p-values: $p_{(1)} \leq \ldots \leq p_{(m)}$.
+Reject $H_{(i)}$ for all $i \leq k$ where $k = \max\{i: p_{(i)} \leq \frac{i}{m}\alpha\}$.
+
+## Information Theory
+
+### 1. Entropy (Shannon Entropy)
+Measure of uncertainty or average information content.
+
+$$H(X) = - \sum_{x} P(x) \log P(x) = E[-\log P(X)]$$
+
+For binary classification ($p$ vs $1-p$):
+$$H(p) = -p \log p - (1-p) \log (1-p)$$
+
+**Properties**:
+-   $H(X) \geq 0$ with equality iff $X$ is deterministic.
+-   $H(X)$ is maximized when $X$ is uniform.
+-   **Joint Entropy**: $H(X, Y) = -\sum_{x,y} P(x,y) \log P(x,y)$.
+-   **Conditional Entropy**: $H(Y|X) = \sum_x P(x) H(Y|X=x)$.
+-   **Chain Rule**: $H(X, Y) = H(X) + H(Y|X)$.
+
+### 2. KL Divergence (Kullback-Leibler)
+Measure of how one probability distribution $Q$ diverges from a second, expected probability distribution $P$. (Relative Entropy).
+
+$$D_{KL}(P \| Q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)} = E_P \left[ \log P(X) - \log Q(X) \right]$$
+
+$$D_{KL}(P \| Q) = H(P, Q) - H(P)$$
+
+Properties:
+-   **Non-negative**: $D_{KL}(P \| Q) \geq 0$ with equality iff $P = Q$ (Gibbs' Inequality).
+-   **Asymmetric**: $D_{KL}(P \| Q) \neq D_{KL}(Q \| P)$.
+-   Not a metric (doesn't satisfy triangle inequality).
+
+### 3. Cross-Entropy
+Loss function often used in classification.
+
+$$H(P, Q) = - \sum_{x} P(x) \log Q(x) = H(P) + D_{KL}(P \| Q)$$
+
+For binary classification (True label $y \in \{0,1\}$, predicted prob $\hat{y}$):
+$$L = -[y \log \hat{y} + (1-y) \log (1-\hat{y})]$$
+
+**Minimizing Cross-Entropy** w.r.t. $Q$ is equivalent to **minimizing KL Divergence** from $P$ to $Q$.
+
+### 4. Mutual Information
+Measures reduction in uncertainty of $X$ given knowledge of $Y$.
+
+$$I(X; Y) = H(X) - H(X|Y) = H(Y) - H(Y|X)$$
+$$I(X; Y) = D_{KL}(P(X,Y) \| P(X)P(Y))$$
+
+**Interpretation**: Amount of information shared between $X$ and $Y$. $I(X;Y) = 0$ iff $X$ and $Y$ are independent.
+
+### 5. Jensen-Shannon Divergence
+Symmetric version of KL divergence.
+
+$$JSD(P \| Q) = \frac{1}{2}D_{KL}(P \| M) + \frac{1}{2}D_{KL}(Q \| M)$$
+where $M = \frac{1}{2}(P + Q)$.
+
+Properties: Symmetric, bounded $[0, 1]$ (with $\log_2$).
+
+## Probabilistic Models
+
+### 1. Naive Bayes Classifier
+Probabilistic classifier based on Bayes' Theorem with "naive" independence assumptions between features.
+
+$$P(y | x_1, \dots, x_n) = \frac{P(y) P(x_1, \dots, x_n | y)}{P(x_1, \dots, x_n)}$$
+
+**Assumption**: Features $x_i$ are conditionally independent given $y$.
+
+$$P(x_i | y, x_1, \dots, x_{i-1}, \dots) = P(x_i | y)$$
+
+**Decision Rule**:
+$$\hat{y} = \arg\max_y P(y) \prod_{i=1}^n P(x_i | y)$$
+
+**Log-Space (Numerical Stability)**:
+$$\hat{y} = \arg\max_y \left( \log P(y) + \sum_{i=1}^n \log P(x_i | y) \right)$$
+
+**Variants**:
+-   **Gaussian Naive Bayes**: $P(x_i | y) \sim \mathcal{N}(\mu_{y,i}, \sigma_{y,i}^2)$.
+-   **Multinomial Naive Bayes**: For count data (text classification).
+-   **Bernoulli Naive Bayes**: For binary features.
+
+### 2. Exponential Family
+Family of distributions that can be written in the form:
+
+$$P(x|\theta) = h(x) \exp\left(\eta(\theta)^T T(x) - A(\theta)\right)$$
+
+-   $\eta(\theta)$: Natural parameter.
+-   $T(x)$: Sufficient statistic.
+-   $A(\theta)$: Log-partition function (normalizer).
+-   $h(x)$: Base measure.
+
+**Members**: Gaussian, Exponential, Gamma, Beta, Bernoulli, Poisson, Multinomial, Dirichlet.
+
+**Properties**:
+-   Sufficient statistics exist.
+-   Conjugate priors exist.
+-   $E[T(X)] = \nabla A(\theta)$.
+-   $\text{Var}(T(X)) = \nabla^2 A(\theta)$.
+
+### 3. Gaussian Mixture Model (GMM)
+Mixture of $K$ Gaussian distributions.
+
+$$P(x) = \sum_{k=1}^K \pi_k \mathcal{N}(x | \mu_k, \Sigma_k)$$
+
+where $\sum \pi_k = 1$ (mixing coefficients).
+
+**EM for GMM**:
+-   **E-Step**: Compute responsibilities $\gamma_{ik} = P(z_i = k | x_i)$.
+-   **M-Step**: Update $\pi_k, \mu_k, \Sigma_k$ using weighted MLE.
+
+### 4. Hidden Markov Model (HMM)
+Model with latent states $z_t$ and observations $x_t$.
+
+**Assumptions**:
+-   **Markov**: $P(z_t | z_{1:t-1}) = P(z_t | z_{t-1})$ (Transition).
+-   **Conditional Independence**: $P(x_t | x_{1:t-1}, z_{1:t}) = P(x_t | z_t)$ (Emission).
+
+**Algorithms**:
+-   **Forward Algorithm**: Compute $P(x_{1:T})$ in $O(T K^2)$.
+-   **Viterbi Algorithm**: Find most likely state sequence $\arg\max_{z_{1:T}} P(z_{1:T} | x_{1:T})$.
+-   **Baum-Welch (EM for HMM)**: Learn parameters.
+
+## Sampling Methods
+
+### 1. Rejection Sampling
+Sample from target distribution $p(x)$ using proposal distribution $q(x)$ where $p(x) \leq M q(x)$.
+
+**Algorithm**:
+1.  Sample $x \sim q(x)$.
+2.  Sample $u \sim \text{Uniform}(0, Mq(x))$.
+3.  If $u \leq p(x)$, accept $x$. Else, reject and repeat.
+
+**Acceptance Rate**: $1/M$. Lower $M$ (tighter bound) is better.
+
+### 2. Importance Sampling
+Estimate $E_p[f(X)]$ by sampling from proposal $q$.
+
+$$E_p[f(X)] = \int f(x) p(x) dx = \int f(x) \frac{p(x)}{q(x)} q(x) dx \approx \frac{1}{n} \sum_{i=1}^n f(x_i) w_i$$
+
+where $x_i \sim q$, $w_i = \frac{p(x_i)}{q(x_i)}$ (importance weights).
+
+### 3. Markov Chain Monte Carlo (MCMC)
+Construct a Markov chain with stationary distribution $\pi(x)$ equal to target distribution.
+
+**Metropolis-Hastings**:
+1.  Propose $x' \sim q(x' | x_t)$.
+2.  Accept with probability $\alpha = \min\left(1, \frac{\pi(x') q(x_t | x')}{\pi(x_t) q(x' | x_t)}\right)$.
+3.  If accept, $x_{t+1} = x'$. Else, $x_{t+1} = x_t$.
+
+**Gibbs Sampling**:
+Sample each variable conditional on others. Special case of Metropolis-Hastings with acceptance probability 1.
+
+$$x_i^{(t+1)} \sim P(x_i | x_1^{(t+1)}, \ldots, x_{i-1}^{(t+1)}, x_{i+1}^{(t)}, \ldots, x_n^{(t)})$$
+
+### 4. Hamiltonian Monte Carlo (HMC)
+Uses gradient information and Hamiltonian dynamics to propose distant moves with high acceptance rate.
+
+**Hamiltonian**: $H(x, p) = U(x) + K(p)$ where $U(x) = -\log \pi(x)$ (potential energy), $K(p) = \frac{1}{2}p^T M^{-1} p$ (kinetic energy).
+
+**Leapfrog Integration**: Simulate Hamiltonian dynamics to propose new state.
+
+## Advanced Topics
+
+### 1. Sufficient Statistics
+A statistic $T(X)$ is sufficient for $\theta$ if $P(X | T(X), \theta) = P(X | T(X))$ (data provides no additional information about $\theta$ beyond $T(X)$).
+
+**Factorization Theorem**: $T(X)$ is sufficient iff $p(x|\theta) = g(T(x), \theta) h(x)$.
+
+### 2. Fisher Information
+Measures amount of information that observable $X$ carries about parameter $\theta$.
+
+$$I(\theta) = E\left[\left(\frac{\partial \log p(X|\theta)}{\partial \theta}\right)^2\right] = -E\left[\frac{\partial^2 \log p(X|\theta)}{\partial \theta^2}\right]$$
+
+**Cramér-Rao Lower Bound**: For unbiased estimator $\hat{\theta}$:
+$$\text{Var}(\hat{\theta}) \geq \frac{1}{I(\theta)}$$
+
+### 3. Bias-Variance Tradeoff
+For estimator $\hat{\theta}$ of parameter $\theta$:
+
+$$\text{MSE}(\hat{\theta}) = E[(\hat{\theta} - \theta)^2] = \text{Bias}(\hat{\theta})^2 + \text{Var}(\hat{\theta})$$
+
+where $\text{Bias}(\hat{\theta}) = E[\hat{\theta}] - \theta$.
+
+### 4. Bootstrap
+Resampling method to estimate sampling distribution of a statistic.
+
+**Algorithm**:
+1.  Sample $n$ observations with replacement from data $\{x_1, \ldots, x_n\}$.
+2.  Compute statistic $\hat{\theta}^*$ on bootstrap sample.
+3.  Repeat $B$ times.
+4.  Use distribution of $\{\hat{\theta}^{*1}, \ldots, \hat{\theta}^{*B}\}$ to estimate sampling distribution.
+
+### 5. Central Limit Theorem (CLT)
+For i.i.d. $X_1, \ldots, X_n$ with mean $\mu$ and variance $\sigma^2$:
+
+$$\frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} \xrightarrow{d} \mathcal{N}(0, 1)$$
+
+**Delta Method**: For smooth function $g$:
+$$\sqrt{n}(g(\bar{X}_n) - g(\mu)) \xrightarrow{d} \mathcal{N}(0, (g'(\mu))^2 \sigma^2)$$

@@ -1,0 +1,215 @@
+---
+title: Divide and Conquer
+description: Comprehensive guide to Divide and Conquer, including Master Theorem, Akra-Bazzi, Strassen's Algorithm, and advanced applications
+---
+
+# Divide and Conquer
+
+## Fundamental Concepts
+
+### Definition
+Divide and Conquer is an algorithm design paradigm based on **multi-branched recursion**. A divide and conquer algorithm works by recursively breaking down a problem into two or more sub-problems of the same or related type, until these become simple enough to be solved directly. The solutions to the sub-problems are then combined to give a solution to the original problem.
+
+### The Three Steps
+1.  **Divide**: Break the problem into $a$ subproblems that are smaller instances of the same problem.
+2.  **Conquer**: Solve the subproblems recursively. If the subproblem sizes are small enough (base case), solve them directly.
+3.  **Combine**: Combine the solutions to the subproblems into the solution for the original problem.
+
+### Recurrence Relations
+The running time of a divide and conquer algorithm is naturally described by a recurrence relation:
+
+$$T(n) = aT(n/b) + f(n)$$
+
+where:
+-   $n$ is the size of the problem.
+-   $a$ is the number of subproblems in the recursion.
+-   $n/b$ is the size of each subproblem.
+-   $f(n)$ is the cost of dividing the problem and combining the results.
+
+## Recurrence Analysis Methods
+
+### 1. The Master Theorem
+The Master Theorem provides a "cookbook" solution for recurrences of the form $T(n) = aT(n/b) + f(n)$ where $a \geq 1, b > 1$.
+
+Compare $f(n)$ with $n^{\log_b a}$ (the "watershed" function):
+
+| Case | Condition | Solution | Intuition |
+| :--- | :--- | :--- | :--- |
+| **1. Leaf-heavy** | $f(n) = O(n^{\log_b a - \epsilon})$ for some $\epsilon > 0$ | $T(n) = \Theta(n^{\log_b a})$ | The cost is dominated by the leaves (base cases). |
+| **2. Balanced** | $f(n) = \Theta(n^{\log_b a})$ | $T(n) = \Theta(n^{\log_b a} \log n)$ | The cost is evenly distributed across levels. |
+| **3. Root-heavy** | $f(n) = \Omega(n^{\log_b a + \epsilon})$ and regularity cond.* | $T(n) = \Theta(f(n))$ | The cost is dominated by the root (divide/combine). |
+
+*\*Regularity condition: $af(n/b) \leq cf(n)$ for some constant $c < 1$ and sufficiently large $n$.*
+
+**Examples**:
+-   **Binary Search**: $T(n) = T(n/2) + O(1)$. $a=1, b=2, f(n)=1$. $n^{\log_2 1} = n^0 = 1$. Case 2 applies. $T(n) = \Theta(\log n)$.
+-   **Merge Sort**: $T(n) = 2T(n/2) + O(n)$. $a=2, b=2, f(n)=n$. $n^{\log_2 2} = n$. Case 2 applies. $T(n) = \Theta(n \log n)$.
+-   **Strassen's**: $T(n) = 7T(n/2) + O(n^2)$. $a=7, b=2$. $n^{\log_2 7} \approx n^{2.81}$. Since $n^2 = O(n^{2.81-\epsilon})$, Case 1 applies. $T(n) = \Theta(n^{\log_2 7})$.
+
+### 2. The Akra-Bazzi Method
+A generalization of the Master Theorem for recurrences where subproblems have unequal sizes.
+For $T(x) = g(x) + \sum_{i=1}^k a_i T(b_i x + h_i(x))$, the solution is:
+
+$$T(x) = \Theta\left(x^p \left(1 + \int_1^x \frac{g(u)}{u^{p+1}} du\right)\right)$$
+
+where $p$ is the unique real root of $\sum_{i=1}^k a_i b_i^p = 1$.
+
+**Example**: $T(n) = T(n/3) + T(n/4) + n$.
+Solve $(1/3)^p + (1/4)^p = 1$. Then compute the integral.
+
+## Essential Algorithms & Implementations
+
+### Merge Sort
+The quintessential divide and conquer sorting algorithm. Stable and guaranteed $O(n \log n)$.
+
+```python
+def merge_sort(arr):
+    # Base case
+    if len(arr) <= 1:
+        return arr
+    
+    # Divide
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    
+    # Combine
+    return merge(left, right)
+
+def merge(left, right):
+    sorted_arr = []
+    i = j = 0
+    
+    # Merge two sorted arrays
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            sorted_arr.append(left[i])
+            i += 1
+        else:
+            sorted_arr.append(right[j])
+            j += 1
+    
+    sorted_arr.extend(left[i:])
+    sorted_arr.extend(right[j:])
+    return sorted_arr
+```
+
+### Strassen's Matrix Multiplication
+Reduces matrix multiplication complexity from $O(n^3)$ to $O(n^{2.81})$.
+
+**Key Idea**: Divide $n \times n$ matrices into four $n/2 \times n/2$ submatrices. Instead of 8 multiplications, compute 7 products ($M_1 \dots M_7$) of linear combinations of submatrices.
+
+$$
+\begin{pmatrix} C_{11} & C_{12} \\ C_{21} & C_{22} \end{pmatrix} = 
+\begin{pmatrix} A_{11} & A_{12} \\ A_{21} & A_{22} \end{pmatrix} 
+\begin{pmatrix} B_{11} & B_{12} \\ B_{21} & B_{22} \end{pmatrix}
+$$
+
+**The 7 Products**:
+1.  $M_1 = (A_{11} + A_{22})(B_{11} + B_{22})$
+2.  $M_2 = (A_{21} + A_{22})B_{11}$
+3.  $M_3 = A_{11}(B_{12} - B_{22})$
+4.  $M_4 = A_{22}(B_{21} - B_{11})$
+5.  $M_5 = (A_{11} + A_{12})B_{22}$
+6.  $M_6 = (A_{21} - A_{11})(B_{11} + B_{12})$
+7.  $M_7 = (A_{12} - A_{22})(B_{21} + B_{22})$
+
+**The Combination**:
+-   $C_{11} = M_1 + M_4 - M_5 + M_7$
+-   $C_{12} = M_3 + M_5$
+-   $C_{21} = M_2 + M_4$
+-   $C_{22} = M_1 - M_2 + M_3 + M_6$
+
+### Karatsuba Algorithm (Fast Multiplication)
+Multiplies two $n$-digit numbers in $O(n^{\log_2 3}) \approx O(n^{1.585})$ instead of $O(n^2)$.
+Let $x = x_1 B^m + x_0$ and $y = y_1 B^m + y_0$.
+Then $xy = (x_1 B^m + x_0)(y_1 B^m + y_0) = z_2 B^{2m} + z_1 B^m + z_0$.
+
+**Trick**: Instead of computing $x_1 y_1, x_1 y_0, x_0 y_1, x_0 y_0$ (4 muls), compute:
+-   $z_0 = x_0 y_0$
+-   $z_2 = x_1 y_1$
+-   $z_1 = (x_1 + x_0)(y_1 + y_0) - z_2 - z_0$
+
+## Advanced Techniques
+
+### 1. Meet-in-the-Middle
+Technique to reduce complexity from exponential $O(2^N)$ to $O(2^{N/2})$.
+**Problem**: Subset Sum - Given set $S$, is there a subset summing to $T$?
+**Approach**:
+1.  Split $S$ into two halves $A$ and $B$ of size $N/2$.
+2.  Generate all subset sums for $A$ ($S_A$) and $B$ ($S_B$).
+3.  Sort $S_B$.
+4.  For each sum $a \in S_A$, binary search for $T - a$ in $S_B$.
+
+### 2. Divide and Conquer on Trees (Centroid Decomposition)
+Used for path problems on trees (e.g., count paths with length $k$).
+1.  Find the **centroid** of the tree (node that splits tree into components of size $\leq n/2$).
+2.  Process paths passing through the centroid.
+3.  Recursively process subtrees (removing centroid).
+**Complexity**: $O(n \log n)$ because tree height becomes $\log n$.
+
+### 3. Square Root Decomposition (Mo's Algorithm)
+While not strictly recursive D&C, it divides the problem into blocks of size $\sqrt{n}$.
+**Use**: Range queries on arrays where updates/queries can be ordered efficiently.
+
+## Interview Problem Types
+
+### Type 1: Modified Binary Search
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Rotated sorted array | Specific element | Compare `mid` with `start` to determine which half is sorted, then standard binary search logic. |
+| Array where elements increase then decrease (Bitonic) | Peak element | Binary search comparing `mid` and `mid+1`. |
+| Two sorted arrays | Median of combined | Binary search on partition of smaller array to ensure left half elements $\leq$ right half. |
+
+### Type 2: Counting Inversions
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Array of integers | Number of pairs $(i, j)$ such that $i < j$ and $A[i] > A[j]$ | Modified Merge Sort. During merge step, if $A[i] > A[j]$, then $A[i]$ and all remaining in left subarray form inversions with $A[j]$. |
+
+### Type 3: Closest Pair of Points
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Set of 2D points | Pair with smallest Euclidean distance | Sort by X. Divide into left/right. Solve recursively. Combine by checking "strip" of width $2\delta$ around center. |
+
+### Type 4: Maximum Subarray Sum
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Array of integers (pos/neg) | Contiguous subarray with largest sum | Max is either in left half, right half, or crossing midpoint. Compute crossing sum in $O(n)$. (Note: Kadane's is $O(n)$, but D&C is $O(n \log n)$). |
+
+## Common Pitfalls
+
+### Pitfall 1: Off-by-One Errors
+**Wrong**: `mid = (left + right) / 2` (Can overflow in languages like C++, though Python handles large ints).
+**Correct**: `mid = left + (right - left) // 2`.
+**Wrong**: `right = mid` vs `right = mid - 1`.
+**Check**: Is the search space inclusive `[left, right]` or exclusive `[left, right)`?
+
+### Pitfall 2: Base Cases
+**Wrong**: Forgetting to handle empty arrays or single-element arrays in recursion.
+**Correct**: Always check `if len(arr) <= 1` (or similar) at the start.
+
+### Pitfall 3: Overhead of Recursion
+**Wrong**: Using D&C for very small inputs where iterative methods or insertion sort might be faster due to stack overhead.
+**Correct**: Hybrid sort (Timsort) uses Insertion Sort for small blocks.
+
+### Pitfall 4: Repeated Work
+**Wrong**: Solving the same subproblem multiple times (e.g., Fibonacci).
+**Correct**: This implies **Dynamic Programming**, not pure Divide and Conquer.
+
+## Quick Reference
+
+-   **Master Theorem**: $T(n) = aT(n/b) + f(n)$. Compare $f(n)$ vs $n^{\log_b a}$.
+-   **Merge Sort**: $O(n \log n)$ time, $O(n)$ space. Stable.
+-   **Quick Sort**: $O(n \log n)$ avg, $O(n^2)$ worst. $O(\log n)$ space. Unstable.
+-   **Binary Search**: $O(\log n)$.
+-   **Strassen's**: $O(n^{2.81})$.
+-   **Karatsuba**: $O(n^{1.585})$.
+-   **Closest Pair**: $O(n \log n)$.
+
+## Practice Problem Categories
+
+-   **Merge Sort Variations**: Count inversions, Count of range sums, Reverse pairs.
+-   **Binary Search on Answer**: Minimize max distance, Painter's partition problem, Aggressive cows.
+-   **Matrix Exponentiation**: Compute $n$-th Fibonacci in $O(\log n)$.
+-   **Geometric D&C**: Closest pair, Convex Hull (Merge step).
+-   **Tree Decompositions**: Centroid decomposition problems.

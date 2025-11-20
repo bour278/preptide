@@ -1,0 +1,257 @@
+---
+title: Programming Techniques
+description: "Essential algorithmic patterns: Sliding Window, Two Pointers, Backtracking, Bit Manipulation, and more"
+---
+
+# Programming Techniques
+
+## 1. Sliding Window
+Used to perform operations on a specific window size of an array or list. Reduces nested loops $O(n^2)$ to $O(n)$.
+
+### Fixed Size Window
+**Use**: Find max/min/sum of every subarray of size $k$.
+**Idea**: Slide window one step. Remove element exiting, add element entering.
+
+```python
+def max_sum_subarray(arr, k):
+    if len(arr) < k: return -1
+    
+    curr_sum = sum(arr[:k])
+    max_sum = curr_sum
+    
+    for i in range(k, len(arr)):
+        curr_sum += arr[i] - arr[i-k]
+        max_sum = max(max_sum, curr_sum)
+        
+    return max_sum
+```
+
+### Variable Size Window
+**Use**: Find longest/shortest subarray satisfying a condition (e.g., sum < S).
+**Idea**: Expand `right` pointer until condition breaks, then shrink `left` pointer until condition holds.
+
+```python
+def length_longest_substring_no_repeats(s):
+    char_map = {}
+    left = 0
+    max_len = 0
+    
+    for right in range(len(s)):
+        if s[right] in char_map:
+            left = max(left, char_map[s[right]] + 1)
+            
+        char_map[s[right]] = right
+        max_len = max(max_len, right - left + 1)
+        
+    return max_len
+```
+
+## 2. Two Pointers
+Used for sorted arrays or pair finding.
+
+### Shrinking Window
+**Use**: Two Sum sorted, Container With Most Water.
+**Idea**: `left` at 0, `right` at $n-1$. Move based on comparison.
+
+```python
+def two_sum_sorted(arr, target):
+    l, r = 0, len(arr) - 1
+    while l < r:
+        s = arr[l] + arr[r]
+        if s == target: return [l+1, r+1]
+        elif s < target: l += 1
+        else: r -= 1
+    return []
+```
+
+### Fast and Slow Pointers (Tortoise and Hare)
+**Use**: Cycle detection, Middle of Linked List, Duplicate number (Floyd's).
+**Idea**: Slow moves 1 step, Fast moves 2 steps. If cycle, they meet.
+
+## 3. Backtracking
+General algorithm for finding all (or some) solutions to computational problems by incrementally building candidates.
+
+### Template
+```python
+def backtrack(candidate):
+    if find_solution(candidate):
+        output(candidate)
+        return
+    
+    for next_candidate in list_of_candidates:
+        if is_valid(next_candidate):
+            place(next_candidate)
+            backtrack(next_candidate)
+            remove(next_candidate) # Backtrack
+```
+
+**Problem**: Permutations, Subsets, N-Queens, Sudoku.
+
+## 4. Bit Manipulation
+Low-level optimization and specific tricks.
+
+### Essential Operators
+-   `&` AND, `|` OR, `^` XOR, `~` NOT, left shift `<<`, right shift `>>`.
+
+### Key Tricks
+
+**Check Odd**: `(n & 1) != 0` - Faster than `% 2`.
+
+```python
+def is_odd(n):
+    return (n & 1) != 0
+```
+
+**Multiply by 2**: `n << 1` - Left shift by 1.
+
+```python
+def multiply_by_2(n):
+    return n << 1
+```
+
+**Clear LSB**: `n & (n - 1)` - Removes lowest set bit. Use for counting set bits, checking power of 2.
+
+```python
+def count_set_bits(n):
+    count = 0
+    while n:
+        n &= (n - 1)  # Clear LSB
+        count += 1
+    return count
+
+def is_power_of_2(n):
+    return n > 0 and (n & (n - 1)) == 0
+```
+
+**Get LSB**: `n & (-n)` - Isolates lowest set bit. Used in Fenwick Tree.
+
+```python
+def get_lsb(n):
+    return n & (-n)
+```
+
+**XOR Self**: `n ^ n = 0` - Find single number among pairs.
+
+```python
+def single_number(nums):
+    result = 0
+    for num in nums:
+        result ^= num
+    return result
+```
+
+**Set Bit k**: `n | (1 << k)` - Sets the k-th bit.
+
+```python
+def set_bit(n, k):
+    return n | (1 << k)
+```
+
+**Check Bit k**: `(n >> k) & 1` - Checks if k-th bit is set.
+
+```python
+def check_bit(n, k):
+    return (n >> k) & 1
+```
+
+**Clear Bit k**: `n & ~(1 << k)` - Clears the k-th bit.
+
+```python
+def clear_bit(n, k):
+    return n & ~(1 << k)
+```
+
+**Toggle Bit k**: `n ^ (1 << k)` - Flips the k-th bit.
+
+```python
+def toggle_bit(n, k):
+    return n ^ (1 << k)
+```
+
+## 5. Prefix Sums
+**Use**: Range Sum Queries in $O(1)$.
+**Idea**: `P[i] = A[0] + ... + A[i]`. Sum `A[i..j] = P[j] - P[i-1]`.
+
+### 2D Prefix Sum
+For submatrix sums.
+`dp[i][j] = matrix[i][j] + dp[i-1][j] + dp[i][j-1] - dp[i-1][j-1]`
+`Sum(r1, c1, r2, c2) = dp[r2][c2] - dp[r1-1][c2] - dp[r2][c1-1] + dp[r1-1][c1-1]`
+
+## 6. Difference Array
+**Use**: Range Updates in $O(1)$ (offline).
+**Idea**: `D[i] = A[i] - A[i-1]`. To add `val` to `A[l..r]`:
+-   `D[l] += val`
+-   `D[r+1] -= val`
+-   Reconstruct array by prefix sum of `D`.
+
+## 7. Monotonic Stack / Queue
+**Stack**: Keep elements sorted. Used for "Next Greater Element".
+**Queue**: Keep elements sorted. Used for "Sliding Window Maximum".
+
+```python
+def next_greater_element(nums):
+    stack = [] # Decreasing stack
+    res = [-1] * len(nums)
+    
+    for i, num in enumerate(nums):
+        while stack and nums[stack[-1]] < num:
+            idx = stack.pop()
+            res[idx] = num
+        stack.append(i)
+    return res
+```
+
+## 8. Union-Find (DSU)
+See Graph Algorithms. Used for connectivity, Kruskal's.
+
+## Interview Problem Types
+
+### Type 1: Subarray Problems
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Array (pos) | Longest subarray sum $\le K$ | Sliding Window. |
+| Array (pos/neg) | Subarray sum $= K$ | Prefix Sum + HashMap. |
+| Array (pos/neg) | Max subarray sum | Kadane's Algorithm. |
+
+### Type 2: Bit Tricks
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| Array where items appear twice, one once | The single one | XOR all elements. |
+| Integer | Count set bits | `n & (n-1)` loop. |
+| Range $[0, n]$ | Missing number | Sum $0..n$ minus Sum array (or XOR). |
+
+### Type 3: Palindromes
+| **Given** | **Find** | **Approach** |
+| :--- | :--- | :--- |
+| String | Can permute to palindrome? | Bitmask (parity of chars) or Set. |
+
+## Common Pitfalls
+
+### Pitfall 1: Sliding Window Conditions
+**Wrong**: Incorrectly updating window state when shrinking.
+**Correct**: Carefully map "add" logic to "remove" logic.
+
+### Pitfall 2: Backtracking State
+**Wrong**: Modifying object reference (list) without copying.
+**Correct**: `result.append(path[:])` (create copy).
+
+### Pitfall 3: Integer Overflow (Java/C++)
+**Wrong**: `mid = (l + r) / 2`.
+**Correct**: `mid = l + (r - l) / 2`. (Not issue in Python).
+
+## Quick Reference
+
+-   **Sliding Window**: $O(n)$. Subarrays/Substrings.
+-   **Two Pointers**: $O(n)$. Sorted arrays.
+-   **Fast/Slow**: $O(n)$. Cycles.
+-   **Backtracking**: Exponential. Exhaustive search.
+-   **Prefix Sum**: $O(1)$ query, $O(n)$ space.
+-   **Bitmask**: $O(1)$ space, fast set ops.
+
+## Practice Problem Categories
+
+-   **Sliding Window**: Minimum Window Substring, Permutation in String.
+-   **Two Pointers**: 3Sum, Trapping Rain Water.
+-   **Backtracking**: Combination Sum, Word Search.
+-   **Bits**: Reverse Bits, Sum of Two Integers (no +).
+-   **Monotonic**: Daily Temperatures, Largest Rectangle in Histogram.

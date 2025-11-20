@@ -1,0 +1,529 @@
+---
+title: Expected Values
+description: Interview prep for expected values, linearity of expectation, conditional expectations, and variance
+---
+
+# Expected Values
+
+## Fundamental Concepts
+
+### Definition of Expected Value
+
+**Discrete case**: For a discrete random variable X with PMF $p(x)$:
+
+$$E[X] = \sum_{x} x \cdot P(X = x) = \sum_{x} x \cdot p(x)$$
+
+**Continuous case**: For a continuous random variable X with PDF $f(x)$:
+
+$$E[X] = \int_{-\infty}^{\infty} x \cdot f(x) \, dx$$
+
+**Intuition**: The expected value is the "center of mass" or weighted average of all possible values, weighted by their probabilities.
+
+### Expected Value of a Function
+
+For a function $g(X)$:
+
+**Discrete case**:
+
+$$E[g(X)] = \sum_{x} g(x) \cdot P(X = x)$$
+
+**Continuous case**:
+
+$$E[g(X)] = \int_{-\infty}^{\infty} g(x) \cdot f(x) \, dx$$
+
+**Key insight**: You don't need to find the distribution of $g(X)$ first—just apply $g$ to the values and weight by the original probabilities.
+
+### Properties of Expectation
+
+1. **Constant**: $E[c] = c$ for any constant $c$
+
+2. **Scaling**: $E[aX] = a \cdot E[X]$ for any constant $a$
+
+3. **Addition**: $E[X + Y] = E[X] + E[Y]$ (always true, even if X and Y are dependent)
+
+4. **Non-negativity**: If $X \geq 0$, then $E[X] \geq 0$
+
+5. **Monotonicity**: If $X \leq Y$, then $E[X] \leq E[Y]$
+
+## Essential Identities and Formulas
+
+### Linearity of Expectation
+
+**Key Formula:**
+
+$$E[aX + bY + c] = a \cdot E[X] + b \cdot E[Y] + c$$
+
+**General form**: For any constants $a_1, ..., a_n$ and random variables $X_1, ..., X_n$:
+
+$$E\left[\sum_{i=1}^{n} a_i X_i\right] = \sum_{i=1}^{n} a_i E[X_i]$$
+
+**Critical insight**: This holds regardless of whether the random variables are independent or dependent. This is one of the most powerful tools in probability.
+
+### Law of the Unconscious Statistician (LOTUS)
+
+For a function $g(X)$, you can compute $E[g(X)]$ directly from the distribution of X without finding the distribution of $g(X)$:
+
+**Discrete**:
+
+$$E[g(X)] = \sum_{x} g(x) \cdot p_X(x)$$
+
+**Continuous**:
+
+$$E[g(X)] = \int_{-\infty}^{\infty} g(x) \cdot f_X(x) \, dx$$
+
+**Why it's useful**: Saves the effort of deriving the distribution of transformed variables.
+
+### Expected Value for Independent Variables
+
+If X and Y are independent:
+
+$$E[XY] = E[X] \cdot E[Y]$$
+
+**Warning**: This does NOT hold if X and Y are dependent. Independence is required.
+
+**General form**: For independent $X_1, ..., X_n$:
+
+$$E\left[\prod_{i=1}^{n} X_i\right] = \prod_{i=1}^{n} E[X_i]$$
+
+### Law of Iterated Expectations (Tower Property)
+
+$$E[X] = E[E[X|Y]]$$
+
+**Intuition**: The expectation of X equals the expectation of the conditional expectation of X given Y.
+
+**Discrete form**:
+
+$$E[X] = \sum_{y} E[X|Y=y] \cdot P(Y=y)$$
+
+**Continuous form**:
+
+$$E[X] = \int_{-\infty}^{\infty} E[X|Y=y] \cdot f_Y(y) \, dy$$
+
+**When to use**: When it's easier to compute conditional expectations than the overall expectation.
+
+### Wald's Equation
+
+If $X_1, X_2, ...$ are i.i.d. with $E[X_i] = \mu$, and N is a non-negative integer random variable independent of the $X_i$'s:
+
+$$E\left[\sum_{i=1}^{N} X_i\right] = E[N] \cdot E[X_1] = E[N] \cdot \mu$$
+
+**Intuition**: Expected sum over a random number of terms equals the expected number of terms times the expected value per term.
+
+**Critical requirement**: N must be independent of the $X_i$'s (or at least, the stopping rule must not "peek ahead").
+
+### Variance Identities
+
+**Definition**:
+
+$$\text{Var}(X) = E[(X - E[X])^2] = E[X^2] - (E[X])^2$$
+
+**Properties**:
+- $\text{Var}(aX + b) = a^2 \text{Var}(X)$ (constants shift but scaling squares the variance)
+- For independent X and Y: $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)$
+- General: $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X,Y)$
+
+**Law of Total Variance**:
+
+$$\text{Var}(X) = E[\text{Var}(X|Y)] + \text{Var}(E[X|Y])$$
+
+## Advanced Expectation Tricks
+
+### Trick 1: Indicator Functions
+
+Express a random variable as a sum of indicators:
+
+$$X = \sum_{i=1}^{n} \mathbb{1}_{A_i}$$
+
+Then by linearity:
+
+$$E[X] = \sum_{i=1}^{n} E[\mathbb{1}_{A_i}] = \sum_{i=1}^{n} P(A_i)$$
+
+**Example**: Expected number of fixed points in a random permutation = $n \cdot \frac{1}{n} = 1$
+
+**Why powerful**: Avoids computing the full distribution of X.
+
+### Trick 2: Symmetry
+
+If random variables have identical distributions (by symmetry), they have the same expectation.
+
+**Example**: In a random arrangement, each position has the same expected value for any specific item.
+
+**Use**: Simplify calculations by identifying symmetric components.
+
+### Trick 3: Tail Sum Formula
+
+For a non-negative discrete random variable X taking values in $\{0, 1, 2, ...\}$:
+
+$$E[X] = \sum_{k=0}^{\infty} P(X > k) = \sum_{k=1}^{\infty} P(X \geq k)$$
+
+**Continuous version**: For $X \geq 0$:
+
+$$E[X] = \int_{0}^{\infty} P(X > x) \, dx$$
+
+**When to use**: When computing tail probabilities is easier than computing the full PMF/PDF.
+
+### Trick 4: Conditioning on First Step
+
+For sequential/recursive processes:
+
+$$E[X] = \sum_{i} P(\text{first step } i) \cdot E[X | \text{first step } i]$$
+
+**Example**: Random walks, gambler's ruin, expected time to absorption.
+
+**Key**: Set up a recursive equation and solve.
+
+### Trick 5: Memoryless Property
+
+For exponential random variables (continuous) or geometric random variables (discrete):
+
+$$E[X - t | X > t] = E[X]$$
+
+**Intuition**: "Forgetting" the past—the remaining time has the same distribution as the original.
+
+**Use**: Simplifies problems involving waiting times.
+
+### Trick 6: Renewal-Reward Theorem
+
+For a renewal process with rewards:
+
+$$\text{Long-run average reward rate} = \frac{E[\text{reward per cycle}]}{E[\text{cycle length}]}$$
+
+**When to use**: Long-run average problems, queuing theory, inspection paradox.
+
+### Trick 7: Indicator Product for Joint Events
+
+$$E[\mathbb{1}_A \cdot \mathbb{1}_B] = E[\mathbb{1}_{A \cap B}] = P(A \cap B)$$
+
+**For covariance**:
+
+$$\text{Cov}(\mathbb{1}_A, \mathbb{1}_B) = P(A \cap B) - P(A) \cdot P(B)$$
+
+### Trick 8: Optimal Stopping
+
+For sums of i.i.d. uniform(0,1) random variables, the expected number of terms needed until the sum exceeds 1 is:
+
+$$E[N] = e$$
+
+where $N = \min\{n : U_1 + ... + U_n > 1\}$ and $U_i \sim \text{Uniform}(0,1)$
+
+**General principle**: Many optimal stopping problems have elegant closed-form solutions.
+
+### Trick 9: Geometric Series in Expectations
+
+For geometric random variables or processes involving probabilities:
+
+$$\sum_{k=0}^{\infty} k \cdot p^k = \frac{p}{(1-p)^2}$$
+
+$$\sum_{k=0}^{\infty} p^k = \frac{1}{1-p}$$
+
+**Use**: Computing expectations of geometric-type distributions.
+
+### Trick 10: Exchange of Sum and Expectation
+
+When appropriate (Fubini's theorem):
+
+$$E\left[\sum_{i=1}^{\infty} X_i\right] = \sum_{i=1}^{\infty} E[X_i]$$
+
+**Condition**: Usually requires $\sum E[|X_i|] < \infty$ or all $X_i \geq 0$.
+
+## Common Distribution Expectations
+
+### Discrete Distributions
+
+| Distribution | Notation | $E[X]$ | $\text{Var}(X)$ |
+|--------------|----------|--------|-----------------|
+| Bernoulli | $\text{Ber}(p)$ | $p$ | $p(1-p)$ |
+| Binomial | $\text{Bin}(n,p)$ | $np$ | $np(1-p)$ |
+| Geometric (trials) | $\text{Geom}(p)$ | $\frac{1}{p}$ | $\frac{1-p}{p^2}$ |
+| Negative Binomial | $\text{NB}(r,p)$ | $\frac{r}{p}$ | $\frac{r(1-p)}{p^2}$ |
+| Poisson | $\text{Pois}(\lambda)$ | $\lambda$ | $\lambda$ |
+
+### Continuous Distributions
+
+| Distribution | Notation | $E[X]$ | $\text{Var}(X)$ |
+|--------------|----------|--------|-----------------|
+| Uniform | $\text{Unif}(a,b)$ | $\frac{a+b}{2}$ | $\frac{(b-a)^2}{12}$ |
+| Exponential | $\text{Exp}(\lambda)$ | $\frac{1}{\lambda}$ | $\frac{1}{\lambda^2}$ |
+| Normal | $\mathcal{N}(\mu, \sigma^2)$ | $\mu$ | $\sigma^2$ |
+| Gamma | $\text{Gamma}(\alpha, \beta)$ | $\frac{\alpha}{\beta}$ | $\frac{\alpha}{\beta^2}$ |
+| Beta | $\text{Beta}(\alpha, \beta)$ | $\frac{\alpha}{\alpha + \beta}$ | $\frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}$ |
+
+## Computing Expectations: Strategies
+
+### Strategy 1: Direct Computation
+
+Use the definition directly:
+
+**Discrete**: Sum over all possible values weighted by probabilities
+
+**Continuous**: Integrate $x \cdot f(x)$ over the support
+
+**When to use**: Simple distributions, finite support, tractable integrals.
+
+### Strategy 2: Use Linearity
+
+Break the random variable into simpler components:
+
+$$X = X_1 + X_2 + ... + X_n$$
+
+Then:
+
+$$E[X] = E[X_1] + E[X_2] + ... + E[X_n]$$
+
+**When to use**: Sums, counting problems, indicator functions.
+
+### Strategy 3: Conditioning (Law of Total Expectation)
+
+Break into cases:
+
+$$E[X] = \sum_{i} E[X|A_i] \cdot P(A_i)$$
+
+or
+
+$$E[X] = E[E[X|Y]]$$
+
+**When to use**: Natural partition exists, conditional expectations are simpler.
+
+### Strategy 4: Symmetry Arguments
+
+If $X_1, ..., X_n$ are identically distributed (symmetric):
+
+$$E[X_i] = E[X_j] \text{ for all } i, j$$
+
+**When to use**: Random permutations, random selections, exchangeable variables.
+
+### Strategy 5: Tail Sum Formula
+
+For non-negative random variables:
+
+$$E[X] = \int_{0}^{\infty} P(X > t) \, dt$$
+
+**When to use**: Survival/tail probabilities easier to compute than full distribution.
+
+### Strategy 6: Recursive Equations
+
+Set up a recursive formula for $E[X]$ and solve:
+
+$$E[X] = f(E[X])$$
+
+**When to use**: Markov chains, random walks, first-passage times.
+
+## Interview Problem Types
+
+### Type 1: Indicator Function Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Counting problem (e.g., fixed points, matches) | Expected count | Express as sum of indicators, use linearity: $E[\sum \mathbb{1}_i] = \sum P(A_i)$ |
+
+### Type 2: Linearity of Expectation Applications
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Sum of random variables (possibly dependent) | Expected value of sum | Use $E[X_1 + ... + X_n] = E[X_1] + ... + E[X_n]$ regardless of dependence |
+
+### Type 3: Conditional Expectation Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Problem with natural stages or conditions | Expected value | Use $E[X] = E[E[X\|Y]]$ or condition on first step |
+
+### Type 4: Random Sums (Wald's Equation)
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Sum of random number of i.i.d. terms | Expected value | Use $E[\sum_{i=1}^N X_i] = E[N] \cdot E[X]$ if N independent of $X_i$ |
+
+### Type 5: Geometric Distribution Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| "First success" or waiting time problems | Expected waiting time | Use memoryless property, geometric distribution: $E[X] = 1/p$ |
+
+### Type 6: Continuous Integration Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Continuous PDF, possibly on restricted region | $E[X]$ or $E[g(X)]$ | Integrate $x \cdot f(x)$ or $g(x) \cdot f(x)$, use LOTUS if needed |
+
+### Type 7: Tail Sum Applications
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Non-negative random variable with known tail probabilities | Expected value | Use $E[X] = \int_0^\infty P(X > t) \, dt$ or $\sum_{k=0}^\infty P(X > k)$ |
+
+### Type 8: Recursive Expected Value Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Process with recursive/Markov structure | Expected time, cost, or value | Set up equation $E[X] = ...$, condition on first step, solve |
+
+### Type 9: Symmetry-Based Problems
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| Random arrangements, selections with symmetry | Expected value involving positions/selections | Use symmetry to argue $E[X_i] = E[X_j]$, simplify calculation |
+
+### Type 10: Moment Generating Functions
+
+| **Given** | **Find** | **Approach** |
+|-----------|----------|--------------|
+| MGF $M_X(t) = E[e^{tX}]$ | Moments $E[X^n]$ | Use $E[X^n] = M_X^{(n)}(0)$ (nth derivative at 0) |
+
+## Common Pitfalls
+
+### Pitfall 1: Confusing $E[XY]$ with $E[X]E[Y]$
+
+**Wrong**: Assuming $E[XY] = E[X] \cdot E[Y]$ when X and Y are dependent
+
+**Check**: This only holds when X and Y are independent
+
+### Pitfall 2: Applying Linearity to Products
+
+**Wrong**: $E[X \cdot Y] = E[X] \cdot E[Y]$ without independence
+
+**Correct**: Linearity applies to sums: $E[X + Y] = E[X] + E[Y]$ always
+
+### Pitfall 3: Forgetting Absolute Convergence
+
+**Wrong**: Exchanging infinite sum and expectation without justification
+
+**Check**: Ensure $\sum E[|X_i|] < \infty$ or all $X_i \geq 0$
+
+### Pitfall 4: Misapplying Wald's Equation
+
+**Wrong**: Using $E[\sum_{i=1}^N X_i] = E[N] \cdot E[X]$ when N depends on the $X_i$'s
+
+**Check**: N must be independent of the $X_i$'s (or use optional stopping theorem)
+
+### Pitfall 5: Incorrect Domain of Integration
+
+**Wrong**: Integrating over wrong limits for restricted support
+
+**Check**: What values can X actually take? Ensure integration limits match support
+
+### Pitfall 6: Forgetting to Condition Properly
+
+**Wrong**: Computing $E[X]$ directly when conditioning would simplify
+
+**Check**: Is there a natural partition or first step to condition on?
+
+## Additional Helpful Tricks
+
+### The Complement for Indicators
+
+For an indicator $\mathbb{1}_A$:
+
+$$E[\mathbb{1}_A] = P(A)$$
+
+$$E[\mathbb{1}_{A^c}] = 1 - P(A)$$
+
+**Example**: Expected number of non-matches = $n - E[\text{matches}]$
+
+### First-Step Analysis
+
+For Markov processes, condition on the first transition:
+
+$$E[T_i] = 1 + \sum_{j} p_{ij} E[T_j]$$
+
+where $T_i$ is the expected time starting from state i.
+
+### Splitting Expectations
+
+For non-negative X:
+
+$$E[X] = E[X \cdot \mathbb{1}_{A}] + E[X \cdot \mathbb{1}_{A^c}]$$
+
+**Use**: When X behaves differently on different regions.
+
+### Coupling and Comparison
+
+If you can show $X \leq Y$ for all outcomes:
+
+$$E[X] \leq E[Y]$$
+
+**Use**: Bounds on expectations, proof by comparison.
+
+### Convexity and Jensen's Inequality
+
+If $g$ is convex:
+
+$$E[g(X)] \geq g(E[X])$$
+
+If $g$ is concave:
+
+$$E[g(X)] \leq g(E[X])$$
+
+**Examples**: 
+- $E[X^2] \geq (E[X])^2$ (since $x^2$ is convex)
+- $E[\log X] \leq \log E[X]$ (since $\log$ is concave)
+
+## Common Mistakes to Avoid
+
+### The "Average of Averages" Fallacy
+
+**Wrong**: $E[E[X|Y]] \neq E[X]$ in general... wait, this is actually true!
+
+**Correct**: Law of iterated expectations says $E[E[X|Y]] = E[X]$ always holds
+
+### Assuming E[1/X] = 1/E[X]
+
+**Wrong**: $E[1/X] = 1/E[X]$
+
+**Correct**: By Jensen's inequality (1/x is convex for x > 0): $E[1/X] \geq 1/E[X]$
+
+### Infinite Expectation Traps
+
+**Wrong**: Assuming all random variables have finite expectation
+
+**Example**: Cauchy distribution, St. Petersburg paradox
+
+**Check**: Verify $E[|X|] < \infty$ before using expectation formulas
+
+## Quick Reference: Key Formulas
+
+**Linearity**:
+
+$$E\left[\sum_{i=1}^{n} a_i X_i\right] = \sum_{i=1}^{n} a_i E[X_i]$$
+
+**Independence**:
+
+$$E[XY] = E[X] \cdot E[Y] \quad \text{(if X, Y independent)}$$
+
+**Law of Total Expectation**:
+
+$$E[X] = E[E[X|Y]]$$
+
+**Wald's Equation**:
+
+$$E\left[\sum_{i=1}^{N} X_i\right] = E[N] \cdot E[X] \quad \text{(if N independent of } X_i\text{)}$$
+
+**Variance Formula**:
+
+$$\text{Var}(X) = E[X^2] - (E[X])^2$$
+
+**Tail Sum**:
+
+$$E[X] = \int_{0}^{\infty} P(X > t) \, dt \quad \text{(for } X \geq 0\text{)}$$
+
+**LOTUS**:
+
+$$E[g(X)] = \int_{-\infty}^{\infty} g(x) f_X(x) \, dx$$
+
+## Practice Problem Categories
+
+- Coupon collector
+- Birthday problem
+- Random walks
+- Gambler's ruin
+- Geometric waiting times
+- Poisson processes
+- Order statistics
+- Secretary problem
+- Optimal stopping
+- Matching/derangement problems
+- Inspection paradox
+- Two-envelope problem
+- St. Petersburg paradox
+- Renewal processes
+

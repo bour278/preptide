@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=16384 next build",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=16384 next dev",
     "start": "next start",
     "types:check": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx"
@@ -13,10 +13,13 @@
     "fumadocs-core": "16.0.14",
     "fumadocs-mdx": "14.0.2",
     "fumadocs-ui": "16.0.14",
+    "katex": "^0.16.25",
     "lucide-react": "^0.552.0",
     "next": "16.0.1",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.16",
@@ -24,6 +27,7 @@
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "cross-env": "^10.1.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.16",
     "typescript": "^5.9.3"

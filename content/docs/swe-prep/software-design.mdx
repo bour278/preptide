@@ -1,0 +1,130 @@
+---
+title: Software Design
+description: Detailed guide to OOP, SOLID, Design Patterns, and System Design Fundamentals
+---
+
+# Software Design
+
+## Object-Oriented Programming (OOP)
+
+### The 4 Pillars
+1.  **Encapsulation**: Hiding internal state and requiring interaction through methods. (Access modifiers: private, public).
+2.  **Abstraction**: Hiding complex implementation details and showing only necessary features (Interfaces, Abstract Classes).
+3.  **Inheritance**: Mechanism for a class to acquire properties of another class (Reusability).
+4.  **Polymorphism**: Ability to treat objects of different classes as objects of a common superclass (Overriding, Overloading).
+
+### Composition vs Inheritance
+**Rule**: Favor Composition over Inheritance.
+-   **Inheritance** ("Is-a"): Rigid, fragile base class problem.
+-   **Composition** ("Has-a"): Flexible, easier to change behavior at runtime.
+
+## SOLID Principles
+
+### 1. Single Responsibility Principle (SRP)
+A class should have only one reason to change.
+*Bad*: `User` class handles auth, database saving, and email sending.
+*Good*: `UserAuth`, `UserRepository`, `EmailService`.
+
+### 2. Open/Closed Principle (OCP)
+Software entities should be open for extension, but closed for modification.
+*Use*: Interfaces and Polymorphism. Add new functionality by adding new classes, not changing existing code.
+
+### 3. Liskov Substitution Principle (LSP)
+Subtypes must be substitutable for their base types.
+*Bad*: `Square` inherits `Rectangle` but changes `setWidth` to also set height.
+
+### 4. Interface Segregation Principle (ISP)
+Clients should not be forced to depend on interfaces they do not use.
+*Bad*: `IWorker` has `work()` and `eat()`. Robot implements `IWorker` but can't `eat`.
+*Good*: `IWorkable`, `IFeedable`.
+
+### 5. Dependency Inversion Principle (DIP)
+Depend on abstractions, not concretions. High-level modules should not depend on low-level modules.
+*Use*: Dependency Injection.
+
+## Design Patterns
+
+### Creational
+-   **Singleton**: One instance globally. (Use sparingly, hard to test).
+-   **Factory**: Creates objects without specifying exact class.
+-   **Builder**: Step-by-step construction of complex objects.
+
+### Structural
+-   **Adapter**: Wrapper to make interfaces compatible.
+-   **Decorator**: Add responsibilities dynamically (Wrappers).
+-   **Facade**: Simple interface to complex subsystem.
+-   **Proxy**: Placeholder to control access to object.
+
+### Behavioral
+-   **Observer**: Pub/Sub. Notify dependents on state change.
+-   **Strategy**: Interchangeable algorithms family.
+-   **State**: Alter behavior when internal state changes.
+
+## System Design Fundamentals
+
+### 1. Vertical vs Horizontal Scaling
+-   **Vertical (Scale Up)**: Bigger machine (CPU/RAM). Limit: HW capacity.
+-   **Horizontal (Scale Out)**: More machines. Unlimited. Complexity: Distributed consistency.
+
+### 2. CAP Theorem
+In a distributed data store, you can only guarantee 2 of 3:
+-   **Consistency**: All nodes see same data at same time.
+-   **Availability**: Every request gets a response (success/failure).
+-   **Partition Tolerance**: System continues despite network split.
+*Reality*: P is mandatory. Choose CP (Banking) or AP (Social Media feed).
+
+### 3. Database Concepts
+-   **ACID**: Atomicity, Consistency, Isolation, Durability (SQL).
+-   **BASE**: Basic Availability, Soft state, Eventual consistency (NoSQL).
+-   **Sharding**: Partitioning data by key (Horizontal).
+-   **Replication**: Master-Slave (Read scaling), Master-Master.
+
+### 4. Caching
+-   **Layers**: Browser, CDN, Server (Redis/Memcached), Database.
+-   **Eviction**: LRU, LFU.
+-   **Strategies**:
+    -   **Write-Through**: Write to cache and DB. Slow write, fast read.
+    -   **Write-Back**: Write to cache, async to DB. Fast write, risk data loss.
+    -   **Cache-Aside**: App checks cache, if miss, load from DB and set cache.
+
+### 5. Asynchronous Processing
+-   **Message Queues**: Kafka, RabbitMQ, SQS. Decouple producer/consumer. Load leveling.
+
+## Interview Problem Types
+
+### Type 1: Low-Level Design (LLD)
+**Goal**: Class diagram, Interfaces.
+| **Problem** | **Concepts** |
+| :--- | :--- |
+| Design Parking Lot | OOP, Strategy (Pricing), Singleton (Manager). |
+| Design Chess | OOP, State pattern (Game state), Moves. |
+
+### Type 2: High-Level Design (HLD)
+**Goal**: Architecture, Components, Scaling.
+| **Problem** | **Concepts** |
+| :--- | :--- |
+| Design TinyURL | Hashing, KGS (Key Gen Service), Redirection (301). |
+| Design Twitter | Fan-out (Push vs Pull), Caching, Sharding. |
+| Design Uber | Geo-hashing (QuadTree), Real-time (WebSockets). |
+
+## Common Pitfalls
+
+### Pitfall 1: Over-Engineering
+**Wrong**: Applying patterns where simple code suffices.
+**Correct**: YAGNI (You Ain't Gonna Need It).
+
+### Pitfall 2: Ignoring Bottlenecks
+**Wrong**: Scaling web servers but leaving DB as single point of failure.
+**Correct**: Identify bottleneck (DB usually) and shard/cache.
+
+## Quick Reference
+
+-   **SQL**: Structured, ACID, Joins. (Postgres, MySQL).
+-   **NoSQL**: Flexible, Scalable. (MongoDB, Cassandra).
+-   **CDN**: Static content delivery (Cloudflare).
+-   **Consistent Hashing**: Distribute keys to servers with minimal reshuffling.
+
+## Practice Problem Categories
+
+-   **LLD**: Parking Lot, Vending Machine, LRU Cache, File System.
+-   **HLD**: URL Shortener, Pastebin, Instagram, Web Crawler.
