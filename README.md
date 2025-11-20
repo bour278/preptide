@@ -1,45 +1,148 @@
-# interview-prep
+# Interview Prep Notes
 
-This is a Next.js application generated with
-[Create Fumadocs](https://github.com/fuma-nama/fumadocs).
+A comprehensive collection of interview preparation materials for quantitative trading, software engineering, and data science roles. Built with Next.js and Fumadocs for fast, searchable documentation.
 
-Run development server:
+## Overview
+
+![Demo](./assets/demo-video.mp4)
+
+## Contents
+
+### Trading Prep
+Mathematical foundations for quantitative trading interviews:
+- Probability Theory and Random Variables
+- Conditional Probability and Bayes' Theorem
+- Expected Values and Moments
+- Combinatorics
+- Limit Theorems and Concentration Inequalities
+- Stochastic Calculus Fundamentals
+
+### Software Engineering Prep
+Core computer science concepts with Python implementations:
+- Divide and Conquer (Master Theorem, Strassen's Algorithm)
+- Dynamic Programming (Knapsack, LCS, Edit Distance)
+- Graph Algorithms (BFS, DFS, Dijkstra, Kruskal, Tarjan)
+- FFT and Numerical Algorithms
+- Data Structures (15+ implementations)
+- Sorting Algorithms (Comparison and Non-comparison based)
+- Pattern Matching (KMP, Rabin-Karp, Z-Algorithm)
+- Programming Techniques (Sliding Window, Two Pointers, Backtracking)
+- Networking Basics
+- Software Design (OOP, SOLID, Design Patterns)
+
+### Data Science Prep
+Machine learning and statistics with mathematical rigor:
+- Statistics and Probability (MLE, MAP, Information Theory, Hypothesis Testing)
+- Optimization (Gradient Descent variants, ADMM, Convex Optimization)
+- Linear Models (OLS, Ridge, Lasso, Bayesian Linear Regression)
+- Machine Learning Algorithms (K-Means, PCA, SVM, Random Forest, XGBoost)
+- Neural Networks (Backpropagation, CNNs, RNNs, Transformers)
+
+## Installation
+
+### Prerequisites
+- Node.js 18.x or higher
+- npm or pnpm package manager
+
+### Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/interview-prep-notes.git
+cd interview-prep-notes
+```
+
+2. Navigate to the documentation directory:
+```bash
+cd interview-prep
+```
+
+3. Install dependencies:
+```bash
+npm install
+```
+
+Or if using pnpm:
+```bash
+pnpm install
+```
+
+## Usage
+
+### Development Server
+
+Start the development server with hot-reload:
 
 ```bash
 npm run dev
-# or
-pnpm dev
-# or
-yarn dev
 ```
 
-Open http://localhost:3000 with your browser to see the result.
+Or with pnpm:
+```bash
+pnpm dev
+```
 
-## Explore
+The documentation will be available at `http://localhost:3000`.
 
-In the project, you can see:
+### Build for Production
 
-- `lib/source.ts`: Code for content source adapter, [`loader()`](https://fumadocs.dev/docs/headless/source-api) provides the interface to access your content.
-- `lib/layout.shared.tsx`: Shared options for layouts, optional but preferred to keep.
+Create an optimized production build:
 
-| Route                     | Description                                            |
-| ------------------------- | ------------------------------------------------------ |
-| `app/(home)`              | The route group for your landing page and other pages. |
-| `app/docs`                | The documentation layout and pages.                    |
-| `app/api/search/route.ts` | The Route Handler for search.                          |
+```bash
+npm run build
+npm start
+```
 
-### Fumadocs MDX
+Or with pnpm:
+```bash
+pnpm build
+pnpm start
+```
 
-A `source.config.ts` config file has been included, you can customise different options like frontmatter schema.
+## Dependencies
 
-Read the [Introduction](https://fumadocs.dev/docs/mdx) for further details.
+### Core
+- **Next.js 16.0.1** - React framework with Turbopack for fast builds
+- **React 19** - UI library
+- **Fumadocs** - Documentation framework with built-in search
 
-## Learn More
+### Documentation
+- **Fumadocs MDX** - MDX processing for documentation
+- **Fumadocs UI** - Pre-built UI components for documentation
+- **Fumadocs Core** - Core documentation utilities
 
-To learn more about Next.js and Fumadocs, take a look at the following
-resources:
+### Styling
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Accessible UI primitives
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
-  features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [Fumadocs](https://fumadocs.dev) - learn about Fumadocs
+### Mathematics
+- **KaTeX** - Fast math typesetting for LaTeX equations
+- **Rehype** - HTML processing for mathematical notation
+
+## Project Structure
+
+```
+interview-prep/
+├── content/
+│   └── docs/
+│       ├── trading-prep/      # Quantitative trading materials
+│       ├── swe-prep/          # Software engineering materials
+│       └── data-science/      # Data science materials
+├── app/                       # Next.js application
+├── components/                # React components
+└── public/                    # Static assets
+```
+
+## Features
+
+- Full-text search across all documentation
+- LaTeX equation rendering with KaTeX
+- Syntax highlighting for code snippets
+- Responsive design for mobile and desktop
+- Dark mode support
+- Fast page navigation with Turbopack
+
+## Contributing
+
+Feel free to open issues or submit pull requests for improvements, corrections, or additional topics.
+
