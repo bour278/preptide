@@ -43,13 +43,7 @@ next-env.d.ts
 .DS_Store
 
 # Turbopack
-.turbo/
-
-# Assets (keep folder but ignore large files)
-assets/*.mp4
-assets/*.mov
-assets/*.avi
-assets/*.mkv
+.turbo/=
 
 # Misc
 *.lock
